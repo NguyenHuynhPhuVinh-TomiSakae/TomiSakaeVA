@@ -10,6 +10,7 @@
   "MouseTracking": "Theo dõi chuột",
   "ScrollToTop": "Cuộn lên trên",
   "ScrollToSelected": "Cuộn đến mô hình đã chọn",
+  "RandomAnimation": "Chuyển động ngẫu nhiên",
   "ExternalLinkageMode": "Chế độ liên kết ngoài (WebSocket)",
   "YoutubeMode": "Chế độ YouTube",
   "YoutubeInfo": "Ký tự đầu tiên của bình luận là '#', nó sẽ bị bỏ qua.",

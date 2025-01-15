@@ -83,7 +83,11 @@ export class Live2DHandler {
 
     // Xử lý motion và expression
     if (ss.live2dType === 'azur') {
-      live2dViewer.motion('Idle')
+      if (ss.isRandomAnimation) {
+        live2dViewer.motion('Animation')
+      } else {
+        live2dViewer.motion('Idle')
+      }
     } else {
       if (expression) {
         live2dViewer.expression(expression)
@@ -122,16 +126,24 @@ export class Live2DHandler {
     // Live2Dモデル以外の場合は早期リターン
     if (ss.modelType !== 'live2d') return
 
-    const idleMotion = ss.idleMotionGroup || 'Idle'
-    live2dViewer.motion(idleMotion)
-    const expression =
-      ss.neutralEmotions[Math.floor(Math.random() * ss.neutralEmotions.length)]
-    if (expression) {
-      live2dViewer.expression(expression)
+    if (ss.live2dType === 'azur') {
+      if (ss.isRandomAnimation) {
+        live2dViewer.motion('Animation')
+      } else {
+        live2dViewer.motion('Idle')
+      }
+    } else {
+      const idleMotion = ss.idleMotionGroup || 'Idle'
+      live2dViewer.motion(idleMotion)
+      const expression =
+        ss.neutralEmotions[Math.floor(Math.random() * ss.neutralEmotions.length)]
+      if (expression) {
+        live2dViewer.expression(expression)
+      }
     }
 
     // 5秒ごとのアイドルモーション再生を開始
-    Live2DHandler.startIdleMotion(idleMotion, live2dViewer)
+    Live2DHandler.startIdleMotion(ss.idleMotionGroup || 'Idle', live2dViewer)
   }
 
   // アイドルモーションのインターバル開始
@@ -141,11 +153,20 @@ export class Live2DHandler {
 
     this.idleMotionInterval = setInterval(() => {
       const currentSs = settingsStore.getState()
-      if (currentSs.modelType !== 'live2d' || ss.live2dType === 'azur') {
+      if (currentSs.modelType !== 'live2d') {
         this.stopIdleMotion()
         return
       }
-      live2dViewer.motion(idleMotion)
+
+      if (currentSs.live2dType === 'azur') {
+        if (currentSs.isRandomAnimation) {
+          live2dViewer.motion('Animation')  // Thay đổi từ 'Idle' thành 'Animation'
+        } else {
+          live2dViewer.motion('Idle')
+        }
+      } else {
+        live2dViewer.motion(idleMotion)
+      }
     }, 5000)
   }
 

@@ -15,7 +15,7 @@ interface AzurLaneModel {
 
 const AzurLane = () => {
     const { t } = useTranslation()
-    const { live2dType, selectedModel, selectedLive2DPath, isMouseTracking } = settingsStore()
+    const { live2dType, selectedModel, selectedLive2DPath, isMouseTracking, isRandomAnimation } = settingsStore()
     const [loadedImages, setLoadedImages] = useState<{ [key: string]: boolean }>({})
     const selectedModelRef = useRef<HTMLDivElement>(null)
     const topRef = useRef<HTMLDivElement>(null)
@@ -81,6 +81,11 @@ const AzurLane = () => {
         Live2DHandler.resetToIdle();
     }, []);
 
+    const handleRandomAnimationChange = useCallback((enabled: boolean) => {
+        settingsStore.setState({ isRandomAnimation: enabled });
+        Live2DHandler.resetToIdle();
+    }, []);
+
     return (
         <div ref={topRef}>
             <div className="mb-16 typography-20 font-bold">
@@ -103,6 +108,17 @@ const AzurLane = () => {
                             onClick={() => handleMouseTrackingChange(!isMouseTracking)}
                         >
                             {isMouseTracking ? t('StatusOn') : t('StatusOff')}
+                        </TextButton>
+                    </div>
+
+                    <div className="mb-16">
+                        <div className="mb-16 typography-16 font-bold">
+                            {t('RandomAnimation')}
+                        </div>
+                        <TextButton
+                            onClick={() => handleRandomAnimationChange(!isRandomAnimation)}
+                        >
+                            {isRandomAnimation ? t('StatusOn') : t('StatusOff')}
                         </TextButton>
                     </div>
 
