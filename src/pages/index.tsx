@@ -1,6 +1,5 @@
 import { Form } from '@/components/form'
 import MessageReceiver from '@/components/messageReceiver'
-import { Introduction } from '@/components/introduction'
 import { Menu } from '@/components/menu'
 import { Meta } from '@/components/meta'
 import ModalImage from '@/components/modalImage'
@@ -22,7 +21,6 @@ const Home = () => {
   return (
     <div className="h-[100svh] bg-cover" style={{ backgroundImage: bgUrl }}>
       <Meta />
-      <Introduction />
       {modelType === 'vrm' ? <VrmViewer /> : <Live2DViewer />}
       <Form />
       <Menu />

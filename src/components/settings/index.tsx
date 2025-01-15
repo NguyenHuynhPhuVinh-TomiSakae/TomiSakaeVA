@@ -1,7 +1,7 @@
+/* eslint-disable prettier/prettier */
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { GitHubLink } from '../githubLink'
 import { IconButton } from '../iconButton'
 import Based from './based'
 import AI from './ai'
@@ -18,7 +18,6 @@ const Settings = (props: Props) => {
     <div className="absolute z-40 w-full h-full bg-white/80 backdrop-blur ">
       <Header {...props} />
       <Main />
-      <Footer />
     </div>
   )
 }
@@ -27,7 +26,6 @@ export default Settings
 const Header = ({ onClickClose }: Pick<Props, 'onClickClose'>) => {
   return (
     <>
-      <GitHubLink />
       <div className="absolute m-24">
         <IconButton
           iconName="24/Close"
@@ -100,10 +98,9 @@ const Main = () => {
               <li key={tab.key}>
                 <button
                   className={`flex py-8 px-16 rounded-8 w-full typography-16 text-left
-                    ${
-                      activeTab === tab.key
-                        ? 'text-white bg-primary'
-                        : 'bg-gray-50 hover:text-gray-900 hover:bg-gray-100'
+                    ${activeTab === tab.key
+                      ? 'text-white bg-primary'
+                      : 'bg-gray-50 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   onClick={() => setActiveTab(tab.key)}
                 >
@@ -120,13 +117,5 @@ const Main = () => {
         </div>
       </div>
     </main>
-  )
-}
-
-const Footer = () => {
-  return (
-    <footer className="absolute py-4 bg-[#413D43] text-center text-white font-Montserrat bottom-0 w-full">
-      powered by ChatVRM from Pixiv / ver. 2.23.1
-    </footer>
   )
 }
