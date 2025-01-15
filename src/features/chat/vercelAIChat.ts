@@ -37,6 +37,11 @@ export async function getVercelAIChatResponse(messages: Message[]) {
     useSearchGrounding,
   } = getAIConfig()
 
+  if (messages.length > 0 && messages[0].role === 'system') {
+    const ss = settingsStore.getState()
+    messages[0].content = `You are ${ss.characterName}. ${messages[0].content}`
+  }
+
   try {
     const response = await fetch('/api/aiChat', {
       method: 'POST',
@@ -81,6 +86,11 @@ export async function getVercelAIChatResponseStream(
     azureEndpoint,
     useSearchGrounding,
   } = getAIConfig()
+
+  if (messages.length > 0 && messages[0].role === 'system') {
+    const ss = settingsStore.getState()
+    messages[0].content = `You are ${ss.characterName}. ${messages[0].content}`
+  }
 
   const response = await fetch('/api/aiChat', {
     method: 'POST',

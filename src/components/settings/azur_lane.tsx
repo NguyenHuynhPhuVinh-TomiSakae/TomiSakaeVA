@@ -21,18 +21,20 @@ const AzurLane = () => {
     const topRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        const scrollTopButton = document.createElement('button')
-        scrollTopButton.innerHTML = '↑ ' + t('ScrollToTop')
-        scrollTopButton.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-full shadow-lg hover:bg-primary/80 transition-colors duration-300 z-50'
-        scrollTopButton.onclick = () => {
-            topRef.current?.scrollIntoView({ behavior: 'smooth' })
-        }
-        document.body.appendChild(scrollTopButton)
+        if (live2dType === 'azur') {
+            const scrollTopButton = document.createElement('button')
+            scrollTopButton.innerHTML = '↑ ' + t('ScrollToTop')
+            scrollTopButton.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-full shadow-lg hover:bg-primary/80 transition-colors duration-300 z-50'
+            scrollTopButton.onclick = () => {
+                topRef.current?.scrollIntoView({ behavior: 'smooth' })
+            }
+            document.body.appendChild(scrollTopButton)
 
-        return () => {
-            document.body.removeChild(scrollTopButton)
+            return () => {
+                document.body.removeChild(scrollTopButton)
+            }
         }
-    }, [selectedModel, t])
+    }, [selectedModel, t, live2dType])
 
     const handleLive2DTypeChange = useCallback((newMode: boolean) => {
         if (newMode) {
