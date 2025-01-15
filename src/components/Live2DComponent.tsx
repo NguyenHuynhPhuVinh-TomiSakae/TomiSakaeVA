@@ -30,6 +30,8 @@ const Live2DComponent = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const selectedLive2DPath = settingsStore((state) => state.selectedLive2DPath)
+  const isMouseTracking = settingsStore((state) => state.isMouseTracking)
+  const live2dType = settingsStore((state) => state.live2dType)
 
   useEffect(() => {
     initApp()
@@ -114,18 +116,22 @@ const Live2DComponent = () => {
     const canvas = canvasContainerRef.current
 
     const handlePointerDown = (event: PointerEvent) => {
-      setIsDragging(true)
-      setDragOffset({
-        x: event.clientX - model.x,
-        y: event.clientY - model.y,
-      })
-
-      if (event.button !== 2) {
-        model.tap(event.clientX, event.clientY)
+      if (event.button === 0) {
+        setIsDragging(true)
+        setDragOffset({
+          x: event.clientX - model.x,
+          y: event.clientY - model.y,
+        })
       }
     }
 
-    const handlePointerMove = (event: PointerEvent) => {
+    const handleMouseTracking = (event: PointerEvent) => {
+      if (isMouseTracking && model.focus && live2dType === 'azur') {
+        model.focus(event.clientX, event.clientY)
+      }
+    }
+
+    const handleDragging = (event: PointerEvent) => {
       if (isDragging) {
         model.x = event.clientX - dragOffset.x
         model.y = event.clientY - dragOffset.y
@@ -148,20 +154,25 @@ const Live2DComponent = () => {
       }
     }
 
-    // イベントリスナーの登録
+    // Luôn thêm các event listener cho kéo thả
     canvas.addEventListener('pointerdown', handlePointerDown)
-    canvas.addEventListener('pointermove', handlePointerMove)
+    canvas.addEventListener('pointermove', handleDragging)
     canvas.addEventListener('pointerup', handlePointerUp)
     canvas.addEventListener('wheel', handleWheel, { passive: false })
 
-    // クリーンアップ関数
+    // Chỉ thêm event listener cho theo dõi chuột khi isMouseTracking = true
+    if (isMouseTracking) {
+      canvas.addEventListener('pointermove', handleMouseTracking)
+    }
+
     return () => {
       canvas.removeEventListener('pointerdown', handlePointerDown)
-      canvas.removeEventListener('pointermove', handlePointerMove)
+      canvas.removeEventListener('pointermove', handleDragging)
+      canvas.removeEventListener('pointermove', handleMouseTracking)
       canvas.removeEventListener('pointerup', handlePointerUp)
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [model, isDragging, dragOffset])
+  }, [model, isDragging, dragOffset, isMouseTracking])
 
   useEffect(() => {
     if (!app || !model) return

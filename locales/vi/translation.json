@@ -7,6 +7,7 @@
   "AzurLaneSettings": "■ Azur Lane",
   "OtherSettings": "■ Khác",
   "UseAzurLaneModel": "Sử dụng mô hình Azur Lane",
+  "MouseTracking": "Theo dõi chuột",
   "ScrollToTop": "Cuộn lên trên",
   "ScrollToSelected": "Cuộn đến mô hình đã chọn",
   "ExternalLinkageMode": "Chế độ liên kết ngoài (WebSocket)",

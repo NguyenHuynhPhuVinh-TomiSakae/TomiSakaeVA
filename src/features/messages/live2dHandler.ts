@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Talk } from './messages'
 import homeStore from '@/features/stores/home'
 import settingsStore from '@/features/stores/settings'
@@ -17,36 +18,31 @@ export class Live2DHandler {
 
     let expression: string | undefined
     let motion: string | undefined
-    switch (talk.emotion) {
-      case 'neutral':
-        expression =
-          ss.neutralEmotions[
-            Math.floor(Math.random() * ss.neutralEmotions.length)
-          ]
-        motion = ss.neutralMotionGroup
-        break
-      case 'happy':
-        expression =
-          ss.happyEmotions[Math.floor(Math.random() * ss.happyEmotions.length)]
-        motion = ss.happyMotionGroup
-        break
-      case 'sad':
-        expression =
-          ss.sadEmotions[Math.floor(Math.random() * ss.sadEmotions.length)]
-        motion = ss.sadMotionGroup
-        break
-      case 'angry':
-        expression =
-          ss.angryEmotions[Math.floor(Math.random() * ss.angryEmotions.length)]
-        motion = ss.angryMotionGroup
-        break
-      case 'relaxed':
-        expression =
-          ss.relaxedEmotions[
-            Math.floor(Math.random() * ss.relaxedEmotions.length)
-          ]
-        motion = ss.relaxedMotionGroup
-        break
+
+    // Chỉ set motion và expression nếu không phải là Azur Lane
+    if (ss.live2dType !== 'azur') {
+      switch (talk.emotion) {
+        case 'neutral':
+          expression = ss.neutralEmotions[Math.floor(Math.random() * ss.neutralEmotions.length)]
+          motion = ss.neutralMotionGroup
+          break
+        case 'happy':
+          expression = ss.happyEmotions[Math.floor(Math.random() * ss.happyEmotions.length)]
+          motion = ss.happyMotionGroup
+          break
+        case 'sad':
+          expression = ss.sadEmotions[Math.floor(Math.random() * ss.sadEmotions.length)]
+          motion = ss.sadMotionGroup
+          break
+        case 'angry':
+          expression = ss.angryEmotions[Math.floor(Math.random() * ss.angryEmotions.length)]
+          motion = ss.angryMotionGroup
+          break
+        case 'relaxed':
+          expression = ss.relaxedEmotions[Math.floor(Math.random() * ss.relaxedEmotions.length)]
+          motion = ss.relaxedMotionGroup
+          break
+      }
     }
 
     // AudioContextの作成
@@ -85,13 +81,17 @@ export class Live2DHandler {
     })
     const audioUrl = URL.createObjectURL(audioBlob)
 
-    // Live2Dモデルの表情を設定
-    if (expression) {
-      live2dViewer.expression(expression)
-    }
-    if (motion) {
-      Live2DHandler.stopIdleMotion()
-      live2dViewer.motion(motion, undefined, 3)
+    // Xử lý motion và expression
+    if (ss.live2dType === 'azur') {
+      live2dViewer.motion('Idle')
+    } else {
+      if (expression) {
+        live2dViewer.expression(expression)
+      }
+      if (motion) {
+        Live2DHandler.stopIdleMotion()
+        live2dViewer.motion(motion, undefined, 3)
+      }
     }
 
     // 音声再生の完了を待つ
@@ -141,7 +141,7 @@ export class Live2DHandler {
 
     this.idleMotionInterval = setInterval(() => {
       const currentSs = settingsStore.getState()
-      if (currentSs.modelType !== 'live2d') {
+      if (currentSs.modelType !== 'live2d' || ss.live2dType === 'azur') {
         this.stopIdleMotion()
         return
       }

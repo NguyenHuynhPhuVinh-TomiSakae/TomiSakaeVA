@@ -155,6 +155,7 @@ interface ModelType {
 interface Live2DType {
   live2dType: 'default' | 'azur'
   selectedModel: string | null
+  isMouseTracking: boolean
 }
 
 export type SettingsState = APIKeys &
@@ -344,6 +345,7 @@ const settingsStore = create<SettingsState>()(
       // Live2D Type
       live2dType: 'default',
       selectedModel: null,
+      isMouseTracking: false,
     }),
     {
       name: 'aitube-kit-settings',
@@ -437,6 +439,7 @@ const settingsStore = create<SettingsState>()(
         relaxedMotionGroup: state.relaxedMotionGroup,
         live2dType: state.live2dType,
         selectedModel: state.selectedModel,
+        isMouseTracking: state.isMouseTracking,
       }),
     }
   )
