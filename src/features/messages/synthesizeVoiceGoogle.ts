@@ -50,12 +50,8 @@ function getGoogleTtsType(
   if (googleTtsType) return googleTtsType
 
   switch (selectLanguage) {
-    case 'ja':
+    case 'vi':
       return 'ja-JP-Standard-B'
-    case 'en':
-      return 'en-US-Neural2-F'
-    case 'zh':
-      return 'cmn-TW-Standard-A'
     default:
       return 'en-US-Neural2-F'
   }

@@ -224,45 +224,12 @@ const Based = () => {
                 ss.selectVoice === 'nijivoice'
 
               switch (newLanguage) {
-                case 'ja':
-                  settingsStore.setState({ selectLanguage: 'ja' })
-
-                  i18n.changeLanguage('ja')
-                  break
-                case 'en':
-                  settingsStore.setState({ selectLanguage: 'en' })
-
-                  if (jaVoiceSelected) {
-                    settingsStore.setState({ selectVoice: 'google' })
-                  }
-
-                  i18n.changeLanguage('en')
-                  break
-                case 'zh':
-                  settingsStore.setState({ selectLanguage: 'zh' })
-
-                  if (jaVoiceSelected) {
-                    settingsStore.setState({ selectVoice: 'google' })
-                  }
-
-                  i18n.changeLanguage('zh-TW')
-                  break
-                case 'ko':
-                  settingsStore.setState({ selectLanguage: 'ko' })
-
-                  if (jaVoiceSelected) {
-                    settingsStore.setState({ selectVoice: 'google' })
-                  }
-
-                  i18n.changeLanguage('ko')
-                  break
                 case 'vi':
                   settingsStore.setState({ selectLanguage: 'vi' })
 
                   if (jaVoiceSelected) {
-                    settingsStore.setState({ selectVoice: 'google' })
+                    settingsStore.setState({ selectVoice: 'voicevox' })
                   }
-
                   i18n.changeLanguage('vi')
                   break
                 default:
@@ -270,10 +237,6 @@ const Based = () => {
               }
             }}
           >
-            <option value="ja">日本語 - Japanese</option>
-            <option value="en">英語 - English</option>
-            <option value="zh">繁體中文 - Traditional Chinese</option>
-            <option value="ko">韓語 - Korean</option>
             <option value="vi">Tiếng Việt - Vietnamese</option>
           </select>
         </div>

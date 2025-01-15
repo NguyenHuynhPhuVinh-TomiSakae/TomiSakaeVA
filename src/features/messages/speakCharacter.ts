@@ -34,7 +34,7 @@ function preprocessMessage(
   let processed = message.trim()
 
   // 英語から日本語への変換
-  if (settings.changeEnglishToJapanese && settings.selectLanguage === 'ja') {
+  if (settings.changeEnglishToJapanese && settings.selectLanguage === 'vi') {
     processed = convertEnglishToJapaneseReading(processed)
   }
 

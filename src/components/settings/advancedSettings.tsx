@@ -68,24 +68,6 @@ const AdvancedSettings = () => {
           </TextButton>
         </div>
       </div>
-      {selectLanguage === 'ja' && (
-        <div className="my-24">
-          <div className="my-16 typography-20 font-bold">
-            {t('EnglishToJapanese')}
-          </div>
-          <div className="my-8">
-            <TextButton
-              onClick={() =>
-                settingsStore.setState((prevState) => ({
-                  changeEnglishToJapanese: !prevState.changeEnglishToJapanese,
-                }))
-              }
-            >
-              {t(changeEnglishToJapanese ? 'StatusOn' : 'StatusOff')}
-            </TextButton>
-          </div>
-        </div>
-      )}
       <div className="my-24">
         <div className="my-16 typography-20 font-bold">
           {t('ShowControlPanel')}

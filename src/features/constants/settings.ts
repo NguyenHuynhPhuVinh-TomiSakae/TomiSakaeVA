@@ -42,14 +42,14 @@ export type AIVoice =
   | 'elevenlabs'
   | 'openai'
   | 'azure'
-export type Language = 'en' | 'ja' | 'ko' | 'zh' | 'vi' // ISO 639-1
+export type Language = 'vi' // ISO 639-1
 
-export const LANGUAGES: Language[] = ['en', 'ja', 'ko', 'zh', 'vi']
+export const LANGUAGES: Language[] = ['vi']
 
 export const isLanguageSupported = (language: string): language is Language =>
   LANGUAGES.includes(language as Language)
 
-export type VoiceLanguage = 'en-US' | 'ja-JP' | 'ko-KR' | 'zh-TW' | 'vi-VN'
+export type VoiceLanguage = 'ja-JP'
 
 export type OpenAITTSVoice =
   | 'alloy'

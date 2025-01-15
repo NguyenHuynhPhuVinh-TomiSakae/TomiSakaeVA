@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { isLanguageSupported } from '@/features/constants/settings'
 import homeStore, { PersistedState } from '@/features/stores/home'
 import settingsStore, { SettingsState } from '@/features/stores/settings'
@@ -18,16 +19,16 @@ const migrateStore = () => {
 
   Object.entries(store).forEach(([k, v]) => {
     if (k in ss) {
-      ;(ss as any)[k] = v
+      ; (ss as any)[k] = v
     } else if (k in hs) {
-      ;(hs as any)[k] = v
+      ; (hs as any)[k] = v
     }
   })
 
   // selectLanguage migration: follow ISO 639-1 and lowercased, e.g. JP → ja
   let lang = ss.selectLanguage.toLowerCase()
   lang = lang === 'jp' ? 'ja' : lang
-  ss.selectLanguage = isLanguageSupported(lang) ? lang : 'ja'
+  ss.selectLanguage = isLanguageSupported(lang) ? lang : 'vi'
 
   settingsStore.setState(ss)
   homeStore.setState(hs)

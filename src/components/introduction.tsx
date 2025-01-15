@@ -27,7 +27,7 @@ export const Introduction = () => {
     let languageCode = i18n.language
 
     settingsStore.setState({
-      selectLanguage: isLanguageSupported(languageCode) ? languageCode : 'ja',
+      selectLanguage: isLanguageSupported(languageCode) ? languageCode : 'vi',
     })
   }
 
@@ -135,11 +135,10 @@ export const Introduction = () => {
           </button>
         </div>
 
-        {selectLanguage === 'ja' && (
+        {selectLanguage === 'vi' && (
           <div className="my-24">
             <p>
-              You can select the language from the settings. Japanese, English,
-              Traditional Chinese and Korean are available.
+              Bạn chỉ có thể sử dụng tiếng việt làm ngôn ngữ chính của hệ thống!
             </p>
           </div>
         )}
