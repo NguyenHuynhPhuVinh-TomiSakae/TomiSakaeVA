@@ -15,6 +15,9 @@ i18n.use(initReactI18next).init({
     ko: {
       translation: require('../../locales/ko/translation.json'),
     },
+    vi: {
+      translation: require('../../locales/vi/translation.json'),
+    },
   },
   lng: 'ja',
   fallbackLng: 'ja',

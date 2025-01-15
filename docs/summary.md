@@ -28,6 +28,8 @@
       - translation.json
     - en/
       - translation.json
+    - vi/
+      - translation.json
   - docs/
     - vrm_licence_en.md
     - vrm_licence_zh.md

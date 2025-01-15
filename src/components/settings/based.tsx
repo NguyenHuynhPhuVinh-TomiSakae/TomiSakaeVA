@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next'
@@ -255,6 +256,15 @@ const Based = () => {
 
                   i18n.changeLanguage('ko')
                   break
+                case 'vi':
+                  settingsStore.setState({ selectLanguage: 'vi' })
+
+                  if (jaVoiceSelected) {
+                    settingsStore.setState({ selectVoice: 'google' })
+                  }
+
+                  i18n.changeLanguage('vi')
+                  break
                 default:
                   break
               }
@@ -264,6 +274,7 @@ const Based = () => {
             <option value="en">英語 - English</option>
             <option value="zh">繁體中文 - Traditional Chinese</option>
             <option value="ko">韓語 - Korean</option>
+            <option value="vi">Tiếng Việt - Vietnamese</option>
           </select>
         </div>
       </div>
@@ -288,21 +299,19 @@ const Based = () => {
 
         <div className="flex gap-4 mb-8">
           <button
-            className={`px-16 py-8 rounded-8 mr-8 ${
-              modelType === 'vrm'
-                ? 'bg-primary text-white'
-                : 'bg-surface1 hover:bg-surface1-hover'
-            }`}
+            className={`px-16 py-8 rounded-8 mr-8 ${modelType === 'vrm'
+              ? 'bg-primary text-white'
+              : 'bg-surface1 hover:bg-surface1-hover'
+              }`}
             onClick={() => settingsStore.setState({ modelType: 'vrm' })}
           >
             VRM
           </button>
           <button
-            className={`px-16 py-8 rounded-8 ${
-              modelType === 'live2d'
-                ? 'bg-primary text-white'
-                : 'bg-surface1 hover:bg-surface1-hover'
-            }`}
+            className={`px-16 py-8 rounded-8 ${modelType === 'live2d'
+              ? 'bg-primary text-white'
+              : 'bg-surface1 hover:bg-surface1-hover'
+              }`}
             onClick={() => settingsStore.setState({ modelType: 'live2d' })}
           >
             Live2D
