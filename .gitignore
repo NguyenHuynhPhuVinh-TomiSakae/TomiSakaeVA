@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+# Mô hình Azur Lane
+/public/azur/models/*
+
 # testing
 /coverage
 

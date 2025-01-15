@@ -6,6 +6,7 @@ import { IconButton } from '../iconButton'
 import Based from './based'
 import AI from './ai'
 import Voice from './voice'
+import AzurLane from './azur_lane'
 import Other from './other'
 
 type Props = {
@@ -36,7 +37,7 @@ const Header = ({ onClickClose }: Pick<Props, 'onClickClose'>) => {
 }
 
 // タブの定義
-type TabKey = 'general' | 'ai' | 'voice' | 'other'
+type TabKey = 'general' | 'ai' | 'voice' | 'azur_lane' | 'other'
 
 const Main = () => {
   const { t } = useTranslation()
@@ -56,6 +57,10 @@ const Main = () => {
       label: t('VoiceSettings'),
     },
     {
+      key: 'azur_lane',
+      label: t('AzurLaneSettings'),
+    },
+    {
       key: 'other',
       label: t('OtherSettings'),
     },
@@ -69,6 +74,8 @@ const Main = () => {
         return <AI />
       case 'voice':
         return <Voice />
+      case 'azur_lane':
+        return <AzurLane />
       case 'other':
         return <Other />
     }

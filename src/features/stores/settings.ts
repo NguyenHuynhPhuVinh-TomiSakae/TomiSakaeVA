@@ -152,13 +152,18 @@ interface ModelType {
   modelType: 'vrm' | 'live2d'
 }
 
+interface Live2DType {
+  live2dType: 'default' | 'azur'
+}
+
 export type SettingsState = APIKeys &
   multiModalAPIKeys &
   ModelProvider &
   Integrations &
   Character &
   General &
-  ModelType
+  ModelType &
+  Live2DType
 
 const settingsStore = create<SettingsState>()(
   persist(
@@ -334,6 +339,9 @@ const settingsStore = create<SettingsState>()(
       sadMotionGroup: process.env.NEXT_PUBLIC_SAD_MOTION_GROUP || '',
       angryMotionGroup: process.env.NEXT_PUBLIC_ANGRY_MOTION_GROUP || '',
       relaxedMotionGroup: process.env.NEXT_PUBLIC_RELAXED_MOTION_GROUP || '',
+
+      // Live2D Type
+      live2dType: 'default',
     }),
     {
       name: 'aitube-kit-settings',
@@ -425,6 +433,7 @@ const settingsStore = create<SettingsState>()(
         sadMotionGroup: state.sadMotionGroup,
         angryMotionGroup: state.angryMotionGroup,
         relaxedMotionGroup: state.relaxedMotionGroup,
+        live2dType: state.live2dType,
       }),
     }
   )
