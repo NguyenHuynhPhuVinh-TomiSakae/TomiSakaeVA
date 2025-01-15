@@ -58,10 +58,6 @@ const Main = () => {
       label: t('VoiceSettings'),
     },
     {
-      key: 'youtube',
-      label: t('YoutubeSettings'),
-    },
-    {
       key: 'slide',
       label: t('SlideSettings'),
     },
@@ -89,7 +85,7 @@ const Main = () => {
   }
 
   return (
-    <main className="max-h-full overflow-auto">
+    <main className="max-h-full overflow-auto scroll-hidden">
       <div className="text-text1 max-w-5xl mx-auto px-24 py-64">
         <div className="md:flex mt-16">
           {/* タブナビゲーション */}
