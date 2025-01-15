@@ -6,8 +6,6 @@ import { IconButton } from '../iconButton'
 import Based from './based'
 import AI from './ai'
 import Voice from './voice'
-import YouTube from './youtube'
-import Slide from './slide'
 import Other from './other'
 
 type Props = {
@@ -38,7 +36,7 @@ const Header = ({ onClickClose }: Pick<Props, 'onClickClose'>) => {
 }
 
 // タブの定義
-type TabKey = 'general' | 'ai' | 'youtube' | 'voice' | 'slide' | 'other'
+type TabKey = 'general' | 'ai' | 'voice' | 'other'
 
 const Main = () => {
   const { t } = useTranslation()
@@ -58,10 +56,6 @@ const Main = () => {
       label: t('VoiceSettings'),
     },
     {
-      key: 'slide',
-      label: t('SlideSettings'),
-    },
-    {
       key: 'other',
       label: t('OtherSettings'),
     },
@@ -75,10 +69,6 @@ const Main = () => {
         return <AI />
       case 'voice':
         return <Voice />
-      case 'youtube':
-        return <YouTube />
-      case 'slide':
-        return <Slide />
       case 'other':
         return <Other />
     }
