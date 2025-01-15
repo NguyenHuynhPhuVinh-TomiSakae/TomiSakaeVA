@@ -83,6 +83,9 @@ const Live2DComponent = () => {
     if (!canvasContainerRef.current) return
     const hs = homeStore.getState()
 
+    // Cập nhật loading state trong store
+    homeStore.setState({ isModelLoading: true })
+
     try {
       const newModel = await Live2DModel.fromSync(modelPath, {
         ticker: Ticker.shared,
@@ -107,6 +110,9 @@ const Live2DComponent = () => {
       await Live2DHandler.resetToIdle()
     } catch (error) {
       console.error('Failed to load Live2D model:', error)
+    } finally {
+      // Cập nhật loading state trong store
+      homeStore.setState({ isModelLoading: false })
     }
   }
 
