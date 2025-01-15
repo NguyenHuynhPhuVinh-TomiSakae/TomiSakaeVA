@@ -7,6 +7,8 @@
   "AzurLaneSettings": "■ Azur Lane",
   "OtherSettings": "■ Khác",
   "UseAzurLaneModel": "Sử dụng mô hình Azur Lane",
+  "ScrollToTop": "Cuộn lên trên",
+  "ScrollToSelected": "Cuộn đến mô hình đã chọn",
   "ExternalLinkageMode": "Chế độ liên kết ngoài (WebSocket)",
   "YoutubeMode": "Chế độ YouTube",
   "YoutubeInfo": "Ký tự đầu tiên của bình luận là '#', nó sẽ bị bỏ qua.",

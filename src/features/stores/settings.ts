@@ -154,6 +154,7 @@ interface ModelType {
 
 interface Live2DType {
   live2dType: 'default' | 'azur'
+  selectedModel: string | null
 }
 
 export type SettingsState = APIKeys &
@@ -342,6 +343,7 @@ const settingsStore = create<SettingsState>()(
 
       // Live2D Type
       live2dType: 'default',
+      selectedModel: null,
     }),
     {
       name: 'aitube-kit-settings',
@@ -434,6 +436,7 @@ const settingsStore = create<SettingsState>()(
         angryMotionGroup: state.angryMotionGroup,
         relaxedMotionGroup: state.relaxedMotionGroup,
         live2dType: state.live2dType,
+        selectedModel: state.selectedModel,
       }),
     }
   )
