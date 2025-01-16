@@ -159,6 +159,10 @@ interface Live2DType {
   isRandomAnimation: boolean
 }
 
+interface MediaInputMode {
+  mediaInputMode: boolean
+}
+
 export type SettingsState = APIKeys &
   multiModalAPIKeys &
   ModelProvider &
@@ -166,7 +170,8 @@ export type SettingsState = APIKeys &
   Character &
   General &
   ModelType &
-  Live2DType
+  Live2DType &
+  MediaInputMode
 
 const settingsStore = create<SettingsState>()(
   persist(
@@ -348,6 +353,9 @@ const settingsStore = create<SettingsState>()(
       selectedModel: null,
       isMouseTracking: false,
       isRandomAnimation: false,
+
+      // Settings
+      mediaInputMode: false,
     }),
     {
       name: 'aitube-kit-settings',
@@ -443,6 +451,7 @@ const settingsStore = create<SettingsState>()(
         selectedModel: state.selectedModel,
         isMouseTracking: state.isMouseTracking,
         isRandomAnimation: state.isRandomAnimation,
+        mediaInputMode: state.mediaInputMode,
       }),
     }
   )

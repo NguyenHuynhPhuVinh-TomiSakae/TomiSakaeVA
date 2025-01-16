@@ -11,6 +11,7 @@
   "ScrollToTop": "Cuộn lên trên",
   "ScrollToSelected": "Cuộn đến mô hình đã chọn",
   "RandomAnimation": "Chuyển động ngẫu nhiên",
+  "MediaInputMode": "Chế độ nhập media",
   "ExternalLinkageMode": "Chế độ liên kết ngoài (WebSocket)",
   "YoutubeMode": "Chế độ YouTube",
   "YoutubeInfo": "Ký tự đầu tiên của bình luận là '#', nó sẽ bị bỏ qua.",

@@ -43,6 +43,7 @@ const ModelProvider = () => {
   const difyKey = settingsStore((s) => s.difyKey)
   const useSearchGrounding = settingsStore((s) => s.useSearchGrounding)
   const deepseekKey = settingsStore((s) => s.deepseekKey)
+  const mediaInputMode = settingsStore((s) => s.mediaInputMode)
 
   const selectAIService = settingsStore((s) => s.selectAIService)
   const selectAIModel = settingsStore((s) => s.selectAIModel)
@@ -69,6 +70,8 @@ const ModelProvider = () => {
     dify: '',
     deepseek: 'deepseek-chat',
   }
+
+  const gemini20Models = ['gemini-2.0-flash-exp']
 
   const handleAIServiceChange = useCallback(
     (newService: keyof typeof defaultModels) => {
@@ -520,6 +523,24 @@ const ModelProvider = () => {
                   </TextButton>
                 </div>
               </div>
+
+              <div className="my-24">
+                <div className="my-16 typography-20 font-bold">
+                  {t('MediaInputMode')}
+                </div>
+                <div className="my-8">
+                  <TextButton
+                    onClick={() => {
+                      settingsStore.setState({
+                        mediaInputMode: !mediaInputMode,
+                      })
+                    }}
+                    disabled={!gemini20Models.includes(selectAIModel)}
+                  >
+                    {mediaInputMode ? t('StatusOn') : t('StatusOff')}
+                  </TextButton>
+                </div>
+              </div>
             </>
           )
         } else if (selectAIService === 'azure') {
@@ -921,6 +942,8 @@ const ModelProvider = () => {
                     label="https://note.com/schroneko/n/n8b1a5bbc740b"
                   />
                 </div>
+              </div>
+              <div className="my-24">
                 <div className="my-16">
                   {t('LocalLLMInfo2')}
                   <br />
