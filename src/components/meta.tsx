@@ -1,7 +1,7 @@
 import Head from 'next/head'
 export const Meta = () => {
-  const title = 'TomiSakae AI'
-  const description = 'Trợ lý ảo AI của TomiSakae!'
+  const title = 'TomiSakae VA'
+  const description = 'Trợ lý ảo của TomiSakae!'
   return (
     <Head>
       <title>{title}</title>
