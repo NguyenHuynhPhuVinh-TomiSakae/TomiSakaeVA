@@ -163,6 +163,10 @@ interface MediaInputMode {
   mediaInputMode: boolean
 }
 
+interface SettingsVoice {
+  voiceEnabled: boolean
+}
+
 export type SettingsState = APIKeys &
   multiModalAPIKeys &
   ModelProvider &
@@ -171,7 +175,8 @@ export type SettingsState = APIKeys &
   General &
   ModelType &
   Live2DType &
-  MediaInputMode
+  MediaInputMode &
+  SettingsVoice
 
 const settingsStore = create<SettingsState>()(
   persist(
@@ -359,6 +364,9 @@ const settingsStore = create<SettingsState>()(
 
       // Settings
       mediaInputMode: false,
+
+      // Additional settings
+      voiceEnabled: false,
     }),
     {
       name: 'aitube-kit-settings',
@@ -455,6 +463,7 @@ const settingsStore = create<SettingsState>()(
         isMouseTracking: state.isMouseTracking,
         isRandomAnimation: state.isRandomAnimation,
         mediaInputMode: state.mediaInputMode,
+        voiceEnabled: state.voiceEnabled,
       }),
     }
   )

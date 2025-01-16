@@ -9,7 +9,7 @@ import { createAzure } from '@ai-sdk/azure'
 import { createDeepSeek } from '@ai-sdk/deepseek'
 import { streamText, generateText, CoreMessage } from 'ai'
 import { NextRequest } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenerativeAI, Part } from '@google/generative-ai'
 
 type AIServiceKey =
   | 'openai'
@@ -29,6 +29,14 @@ export const maxDuration = 30
 
 export const config = {
   runtime: 'edge',
+}
+
+type MessagePart = {
+  text?: string;
+  inlineData?: {
+    data: string;
+    mimeType: string;
+  };
 }
 
 export default async function handler(req: NextRequest) {
@@ -168,12 +176,10 @@ export default async function handler(req: NextRequest) {
           }
         })
 
-        // Sửa lại phần xử lý history
         const chatHistory = messages
           .filter((msg: Message) => msg.role !== 'system')
           .slice(0, -1)
           .reduce((acc: Message[], msg: Message) => {
-            // Đảm bảo tin nhắn đầu tiên là từ user
             if (acc.length === 0 && msg.role === 'assistant') {
               return acc;
             }
@@ -187,20 +193,25 @@ export default async function handler(req: NextRequest) {
           history: chatHistory
         })
 
-        const result = await chat.sendMessage([
-          { text: lastMessage.content[0].text },
-          {
-            inlineData: {
-              data: lastMessage.content[1].image_url.url.split(',')[1],
-              mimeType: 'image/jpeg'
-            }
-          }
-        ])
+        // Xử lý nhiều ảnh
+        const messageParts: Part[] = [{ text: lastMessage.content[0].text }]
 
+        // Lọc ra các phần tử có image_url và thêm vào messageParts
+        lastMessage.content.forEach((content: any) => {
+          if (content.image_url) {
+            messageParts.push({
+              inlineData: {
+                data: content.image_url.url.split(',')[1],
+                mimeType: 'image/jpeg'
+              }
+            } as Part)
+          }
+        })
+
+        const result = await chat.sendMessage(messageParts)
         const response = await result.response
         const text = response.text()
 
-        // Tạo response stream theo định dạng Vercel AI SDK
         const encoder = new TextEncoder()
         const stream = new ReadableStream({
           async start(controller) {
@@ -296,23 +307,21 @@ function consolidateMessages(messages: Message[]) {
   let lastRole: string | null = null
   let combinedContent:
     | string
-    | [
-      {
-        type: 'text'
-        text: string
-      },
-      {
-        type: 'image'
-        image: string
-      },
-    ]
+    | Array<
+      | { type: 'text'; text: string }
+      | { type: 'image'; image: string }
+      | { type: 'image_url'; image_url: { url: string } }
+    >
 
   messages.forEach((message, index) => {
     if (message.role === lastRole) {
       if (typeof combinedContent === 'string') {
         combinedContent += '\n' + message.content
       } else {
-        combinedContent[0].text += '\n' + message.content
+        if (Array.isArray(combinedContent) &&
+          combinedContent[0]?.type === 'text') {
+          combinedContent[0].text += '\n' + message.content
+        }
       }
     } else {
       if (lastRole !== null) {

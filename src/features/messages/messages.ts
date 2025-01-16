@@ -1,11 +1,18 @@
+/* eslint-disable prettier/prettier */
 export type Message = {
-  role: string // "assistant" | "system" | "user";
+  role: string
   content?:
-    | string
-    | [{ type: 'text'; text: string }, { type: 'image'; image: string }] // マルチモーダル拡張
+  | string
+  | Array<
+    | { type: 'text'; text: string }
+    | { type: 'image'; image: string }
+    | { type: 'image_url'; image_url: { url: string } }
+  >
   audio?: { id: string }
   timestamp?: string
 }
+
+export type MessageContent = Message['content']
 
 export const EMOTIONS = ['neutral', 'happy', 'angry', 'sad', 'relaxed'] as const
 export type EmotionType = (typeof EMOTIONS)[number]

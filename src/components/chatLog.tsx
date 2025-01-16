@@ -44,16 +44,21 @@ export const ChatLog = () => {
                 />
               ) : (
                 <>
-                  <Chat
-                    role={msg.role}
-                    message={msg.content ? msg.content[0].text : ''}
-                    characterName={characterName}
-                  />
-                  <ChatImage
-                    role={msg.role}
-                    imageUrl={msg.content ? msg.content[1].image : ''}
-                    characterName={characterName}
-                  />
+                  {msg.content?.find(c => c.type === 'text') && (
+                    <Chat
+                      role={msg.role}
+                      message={msg.content.find(c => c.type === 'text')?.text || ''}
+                      characterName={characterName}
+                    />
+                  )}
+                  {msg.content?.filter(c => c.type === 'image' || c.type === 'image_url').map((imgContent, index) => (
+                    <ChatImage
+                      key={index}
+                      role={msg.role}
+                      imageUrl={'image' in imgContent ? imgContent.image : imgContent.image_url.url}
+                      characterName={characterName}
+                    />
+                  ))}
                 </>
               )}
             </div>

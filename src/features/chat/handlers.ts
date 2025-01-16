@@ -12,10 +12,11 @@ import webSocketStore from '@/features/stores/websocketStore'
 import i18next from 'i18next'
 import toastStore from '@/features/stores/toast'
 
-type MessageContent = string | [
-  { type: 'text'; text: string },
-  { type: 'image'; image: string }
-]
+type MessageContent = string | Array<
+  | { type: 'text'; text: string }
+  | { type: 'image'; image: string }
+  | { type: 'image_url'; image_url: { url: string } }
+>
 
 /**
  * 受け取ったメッセージを処理し、AIの応答を生成して発話させる
@@ -459,7 +460,7 @@ export const handleSendChatFn = () => async (text: string, images?: string[]) =>
   const messageContent: MessageContent = images?.length
     ? [
       { type: 'text' as const, text },
-      { type: 'image' as const, image: images[0] }
+      ...images.map(image => ({ type: 'image' as const, image }))
     ]
     : text
 
@@ -490,14 +491,14 @@ export const handleSendChatFn = () => async (text: string, images?: string[]) =>
 
       let processedText = ''
       const reader = response.getReader()
-      const urlGroups = new Map<string, string>() // Lưu URL và dạng xuất hiện đầu tiên
-      let currentUrl: string | null = null // URL hiện tại đang xử lý
+      const urlGroups = new Map<string, string>()
+      let currentUrl: string | null = null
+      const currentSlideMessages: string[] = []
 
       const processNewText = (newText: string) => {
         let processed = newText.replace(
           /\[([^\]]+)\]|\[([^\]]+)\]\(([^)]+)\)|https?:\/\/[^\s\]]+/g,
           (match, bracketContent, mdText, mdUrl) => {
-            // Trích xuất URL từ match
             let url: string | null = null
             if (mdUrl) {
               url = mdUrl.trim()
@@ -507,23 +508,39 @@ export const handleSendChatFn = () => async (text: string, images?: string[]) =>
             }
 
             if (!url) return match
-
-            // Nếu là URL mới (chưa có trong urlGroups)
             if (!urlGroups.has(url)) {
               urlGroups.set(url, match)
               currentUrl = url
               return match
             }
-
-            // Nếu URL trùng với URL hiện tại, giữ lại
-            if (url === currentUrl) {
-              return match
-            }
-
-            // Nếu URL trùng với URL cũ, xóa đi
+            if (url === currentUrl) return match
             return ''
           }
         )
+
+        if (processed.trim()) {
+          const voiceEnabled = settingsStore.getState().voiceEnabled
+          if (voiceEnabled) {
+            speakCharacter(
+              {
+                message: processed,
+                emotion: 'neutral',
+              },
+              () => {
+                currentSlideMessages.push(processed)
+                homeStore.setState({
+                  slideMessages: currentSlideMessages
+                })
+              },
+              () => {
+                currentSlideMessages.shift()
+                homeStore.setState({
+                  slideMessages: currentSlideMessages
+                })
+              }
+            )
+          }
+        }
 
         return processed
       }
@@ -540,7 +557,7 @@ export const handleSendChatFn = () => async (text: string, images?: string[]) =>
             assistantMessage: processedText,
             chatLog: [
               ...messageLog,
-              { role: 'assistant', content: processedText, timestamp: timestamp }
+              { role: 'assistant', content: processedText }
             ],
           })
         }
