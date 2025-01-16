@@ -41,11 +41,19 @@ export const speakMessageHandler = async (receivedMessage: string) => {
     if (remainingMessage.includes(delimiter)) {
       // コードブロックの分割
       isCodeBlock = true
-      const [first, ...rest] = remainingMessage.split(delimiter)
-        ;[remainingMessage, codeBlockText] = [
-          first,
-          rest.join(delimiter).replace(/^\n/, ''),
-        ]
+      const [beforeCode, ...rest] = remainingMessage.split(delimiter)
+
+      // Xóa code block trước text
+      if (beforeCode.trim()) {
+        receivedMessage = beforeCode
+        isCodeBlock = true
+        codeBlockText = rest.join(delimiter)
+      } else {
+        isCodeBlock = true
+        codeBlockText = rest.join(delimiter)
+        receivedMessage = ''
+        continue
+      }
     } else if (remainingMessage == '' && isCodeBlock) {
       // コードブロックの分割
       let code = ''
@@ -476,6 +484,71 @@ export const handleSendChatFn = () => async (text: string, images?: string[]) =>
   ]
 
   try {
+    const processAIResponse = async (messageLog: Message[], messages: Message[]) => {
+      const response = await getAIChatResponseStream(messages)
+      if (!response) return
+
+      let processedText = ''
+      const reader = response.getReader()
+      const urlGroups = new Map<string, string>() // Lưu URL và dạng xuất hiện đầu tiên
+      let currentUrl: string | null = null // URL hiện tại đang xử lý
+
+      const processNewText = (newText: string) => {
+        let processed = newText.replace(
+          /\[([^\]]+)\]|\[([^\]]+)\]\(([^)]+)\)|https?:\/\/[^\s\]]+/g,
+          (match, bracketContent, mdText, mdUrl) => {
+            // Trích xuất URL từ match
+            let url: string | null = null
+            if (mdUrl) {
+              url = mdUrl.trim()
+            } else {
+              const urlMatch = match.match(/https?:\/\/[^\s\]]+/)
+              if (urlMatch) url = urlMatch[0]
+            }
+
+            if (!url) return match
+
+            // Nếu là URL mới (chưa có trong urlGroups)
+            if (!urlGroups.has(url)) {
+              urlGroups.set(url, match)
+              currentUrl = url
+              return match
+            }
+
+            // Nếu URL trùng với URL hiện tại, giữ lại
+            if (url === currentUrl) {
+              return match
+            }
+
+            // Nếu URL trùng với URL cũ, xóa đi
+            return ''
+          }
+        )
+
+        return processed
+      }
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const newProcessedText = processNewText(value)
+          processedText += newProcessedText
+
+          homeStore.setState({
+            assistantMessage: processedText,
+            chatLog: [
+              ...messageLog,
+              { role: 'assistant', content: processedText, timestamp: timestamp }
+            ],
+          })
+        }
+      } finally {
+        reader.releaseLock()
+      }
+    }
+
     await processAIResponse(messageLog, messages)
   } catch (e) {
     console.error(e)
