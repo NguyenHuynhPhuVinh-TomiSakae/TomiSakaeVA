@@ -195,8 +195,9 @@ const settingsStore = create<SettingsState>()(
 
       // Model Provider
       selectAIService:
-        (process.env.NEXT_PUBLIC_SELECT_AI_SERVICE as AIService) || 'openai',
-      selectAIModel: process.env.NEXT_PUBLIC_SELECT_AI_MODEL || 'gpt-4',
+        (process.env.NEXT_PUBLIC_SELECT_AI_SERVICE as AIService) || 'google',
+      selectAIModel:
+        process.env.NEXT_PUBLIC_SELECT_AI_MODEL || 'gemini-2.0-flash-exp',
       localLlmUrl: process.env.NEXT_PUBLIC_LOCAL_LLM_URL || '',
       selectVoice:
         (process.env.NEXT_PUBLIC_SELECT_VOICE as AIVoice) || 'voicevox',
@@ -266,9 +267,11 @@ const settingsStore = create<SettingsState>()(
       conversationContinuityMode: false,
 
       // Character
-      characterName: process.env.NEXT_PUBLIC_CHARACTER_NAME || 'CHARACTER',
+      characterName: process.env.NEXT_PUBLIC_CHARACTER_NAME || 'Tomi-Chan',
       showAssistantText:
-        process.env.NEXT_PUBLIC_SHOW_ASSISTANT_TEXT === 'true' ? true : false,
+        process.env.NEXT_PUBLIC_SHOW_ASSISTANT_TEXT === 'true'
+          ? true
+          : false || true,
       showCharacterName:
         process.env.NEXT_PUBLIC_SHOW_CHARACTER_NAME === 'true' ? true : false,
       systemPrompt: process.env.NEXT_PUBLIC_SYSTEM_PROMPT || SYSTEM_PROMPT,
@@ -280,7 +283,7 @@ const settingsStore = create<SettingsState>()(
 
       // General
       selectLanguage:
-        (process.env.NEXT_PUBLIC_SELECT_LANGUAGE as Language) || 'ja',
+        (process.env.NEXT_PUBLIC_SELECT_LANGUAGE as Language) || 'vi',
       changeEnglishToJapanese:
         process.env.NEXT_PUBLIC_CHANGE_ENGLISH_TO_JAPANESE === 'true',
       includeTimestampInUserMessage:
@@ -331,7 +334,7 @@ const settingsStore = create<SettingsState>()(
 
       // Settings
       modelType:
-        (process.env.NEXT_PUBLIC_MODEL_TYPE as 'vrm' | 'live2d') || 'vrm',
+        (process.env.NEXT_PUBLIC_MODEL_TYPE as 'vrm' | 'live2d') || 'live2d',
 
       // Live2D settings
       neutralEmotions:

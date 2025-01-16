@@ -1,20 +1,10 @@
-import { Disclosure } from '@headlessui/react'
-import { ChevronUpIcon } from '@heroicons/react/24/solid'
 import { useTranslation } from 'react-i18next'
 
-import menuStore from '@/features/stores/menu'
 import settingsStore from '@/features/stores/settings'
 import { TextButton } from '../textButton'
 
 const AdvancedSettings = () => {
-  const selectLanguage = settingsStore((s) => s.selectLanguage)
-  const changeEnglishToJapanese = settingsStore(
-    (s) => s.changeEnglishToJapanese
-  )
   const showControlPanel = settingsStore((s) => s.showControlPanel)
-  const includeTimestampInUserMessage = settingsStore(
-    (s) => s.includeTimestampInUserMessage
-  )
   const showAssistantText = settingsStore((s) => s.showAssistantText)
   const showCharacterName = settingsStore((s) => s.showCharacterName)
 
@@ -82,25 +72,6 @@ const AdvancedSettings = () => {
             }
           >
             {showControlPanel ? t('StatusOn') : t('StatusOff')}
-          </TextButton>
-        </div>
-      </div>
-      <div className="my-24">
-        <div className="my-16 typography-20 font-bold">
-          {t('IncludeTimestampInUserMessage')}
-        </div>
-        <div className="my-16 typography-16 whitespace-pre-line">
-          {t('IncludeTimestampInUserMessageInfo')}
-        </div>
-        <div className="my-8">
-          <TextButton
-            onClick={() =>
-              settingsStore.setState({
-                includeTimestampInUserMessage: !includeTimestampInUserMessage,
-              })
-            }
-          >
-            {includeTimestampInUserMessage ? t('StatusOn') : t('StatusOff')}
           </TextButton>
         </div>
       </div>

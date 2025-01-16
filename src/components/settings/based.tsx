@@ -1,9 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import i18n from 'i18next'
-
-import { Language } from '@/features/constants/settings'
 import homeStore from '@/features/stores/home'
 import menuStore from '@/features/stores/menu'
 import settingsStore from '@/features/stores/settings'
@@ -207,143 +204,42 @@ const Based = () => {
 
   return (
     <>
-      <div className="mb-24">
-        <div className="mb-16 typography-20 font-bold">{t('Language')}</div>
-        <div className="my-8">
-          <select
-            className="px-16 py-8 bg-surface1 hover:bg-surface1-hover rounded-8"
-            value={selectLanguage}
-            onChange={(e) => {
-              const newLanguage = e.target.value as Language
-
-              const ss = settingsStore.getState()
-              const jaVoiceSelected =
-                ss.selectVoice === 'voicevox' ||
-                ss.selectVoice === 'koeiromap' ||
-                ss.selectVoice === 'aivis_speech' ||
-                ss.selectVoice === 'nijivoice'
-
-              switch (newLanguage) {
-                case 'vi':
-                  settingsStore.setState({ selectLanguage: 'vi' })
-
-                  if (jaVoiceSelected) {
-                    settingsStore.setState({ selectVoice: 'voicevox' })
-                  }
-                  i18n.changeLanguage('vi')
-                  break
-                default:
-                  break
-              }
-            }}
-          >
-            <option value="vi">Tiếng Việt - Vietnamese</option>
-          </select>
-        </div>
+      <div className="mb-16 typography-20 font-bold">
+        {t('CharacterName')}
       </div>
-      <div className="my-24">
-        <div className="my-16 typography-20 font-bold">
-          {t('CharacterName')}
-        </div>
-        <input
-          className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8"
-          type="text"
-          placeholder={t('CharacterName')}
-          value={characterName}
-          onChange={(e) =>
-            settingsStore.setState({ characterName: e.target.value })
-          }
-        />
+      <input
+        className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8"
+        type="text"
+        placeholder={t('CharacterName')}
+        value={characterName}
+        onChange={(e) =>
+          settingsStore.setState({ characterName: e.target.value })
+        }
+      />
 
-        <div className="mt-24 mb-16 typography-20 font-bold">
-          {t('CharacterModelLabel')}
-        </div>
-        <div className="mb-16 typography-16">{t('CharacterModelInfo')}</div>
-
-        <div className="flex gap-4 mb-8">
-          <button
-            className={`px-16 py-8 rounded-8 mr-8 ${modelType === 'vrm'
-              ? 'bg-primary text-white'
-              : 'bg-surface1 hover:bg-surface1-hover'
-              }`}
-            onClick={() => settingsStore.setState({ modelType: 'vrm' })}
-          >
-            VRM
-          </button>
-          <button
-            className={`px-16 py-8 rounded-8 ${modelType === 'live2d'
-              ? 'bg-primary text-white'
-              : 'bg-surface1 hover:bg-surface1-hover'
-              }`}
-            onClick={() => settingsStore.setState({ modelType: 'live2d' })}
-          >
-            Live2D
-          </button>
-        </div>
-
-        {modelType === 'vrm' ? (
-          <>
-            <select
-              className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8"
-              value={selectedVrmPath}
-              onChange={(e) => {
-                const path = e.target.value
-                settingsStore.setState({ selectedVrmPath: path })
-                const { viewer } = homeStore.getState()
-                viewer.loadVrm(path)
-              }}
-            >
-              {vrmFiles.map((file) => (
-                <option key={file} value={`/vrm/${file}`}>
-                  {file.replace('.vrm', '')}
-                </option>
-              ))}
-            </select>
-
-            <div className="my-16">
-              <TextButton
-                onClick={() => {
-                  const { fileInput } = menuStore.getState()
-                  if (fileInput) {
-                    fileInput.accept = '.vrm'
-                    fileInput.onchange = (e) => {
-                      const file = (e.target as HTMLInputElement).files?.[0]
-                      if (file) {
-                        handleVrmUpload(file)
-                      }
-                    }
-                    fileInput.click()
-                  }
-                }}
-              >
-                {t('OpenVRM')}
-              </TextButton>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="my-16 whitespace-pre-line">
-              {t('Live2D.FileInfo')}
-            </div>
-            <select
-              className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8 mb-8"
-              value={selectedLive2DPath}
-              onChange={(e) => {
-                const path = e.target.value
-                settingsStore.setState({ selectedLive2DPath: path })
-              }}
-            >
-              {live2dModels.map((model) => (
-                <option key={model.path} value={model.path}>
-                  {model.name}
-                </option>
-              ))}
-            </select>
-            <div className="my-16">
-              <Live2DSettingsForm />
-            </div>
-          </>
-        )}
+      <div className="mt-24 mb-16 typography-20 font-bold">
+        {t('CharacterModelLabel')}
+      </div>
+      <div className="mb-16 typography-16">{t('CharacterModelInfo')}</div>
+      <div className="my-16 whitespace-pre-line">
+        {t('Live2D.FileInfo')}
+      </div>
+      <select
+        className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8 mb-8"
+        value={selectedLive2DPath}
+        onChange={(e) => {
+          const path = e.target.value
+          settingsStore.setState({ selectedLive2DPath: path })
+        }}
+      >
+        {live2dModels.map((model) => (
+          <option key={model.path} value={model.path}>
+            {model.name}
+          </option>
+        ))}
+      </select>
+      <div className="my-16">
+        <Live2DSettingsForm />
       </div>
       <div className="mt-24">
         <div className="my-16 typography-20 font-bold">
