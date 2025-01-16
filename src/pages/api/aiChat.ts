@@ -168,14 +168,23 @@ export default async function handler(req: NextRequest) {
           }
         })
 
-        const chat = model.startChat({
-          history: messages
-            .filter((msg: Message) => msg.role !== 'system')
-            .slice(0, -1) // Bỏ message cuối cùng vì sẽ gửi riêng
-            .map((msg: Message) => ({
-              role: msg.role === 'assistant' ? 'model' : msg.role,
+        // Sửa lại phần xử lý history
+        const chatHistory = messages
+          .filter((msg: Message) => msg.role !== 'system')
+          .slice(0, -1)
+          .reduce((acc: Message[], msg: Message) => {
+            // Đảm bảo tin nhắn đầu tiên là từ user
+            if (acc.length === 0 && msg.role === 'assistant') {
+              return acc;
+            }
+            return [...acc, {
+              role: msg.role === 'assistant' ? 'model' : 'user',
               parts: [{ text: msg.content as string }]
-            }))
+            }];
+          }, []);
+
+        const chat = model.startChat({
+          history: chatHistory
         })
 
         const result = await chat.sendMessage([
