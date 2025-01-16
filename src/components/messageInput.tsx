@@ -9,21 +9,27 @@ import { IconButton } from './iconButton'
 type Props = {
   userMessage: string
   isMicRecording: boolean
+  selectedImages: string[]
   onChangeUserMessage: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void
   onClickSendButton: (event: React.MouseEvent<HTMLButtonElement>) => void
   onClickMicButton: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onClickMediaButton?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onFileSelect: (files: FileList) => void
+  onRemoveImage: (index: number) => void
+  fileInputRef: React.RefObject<HTMLInputElement>
 }
 
 export const MessageInput = ({
   userMessage,
   isMicRecording,
+  selectedImages,
   onChangeUserMessage,
   onClickMicButton,
   onClickSendButton,
-  onClickMediaButton,
+  onFileSelect,
+  onRemoveImage,
+  fileInputRef,
 }: Props) => {
   const chatProcessing = homeStore((s) => s.chatProcessing)
   const slidePlaying = slideStore((s) => s.isPlaying)
@@ -33,8 +39,6 @@ export const MessageInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const realtimeAPIMode = settingsStore((s) => s.realtimeAPIMode)
   const mediaInputMode = settingsStore((s) => s.mediaInputMode)
-  const [selectedImages, setSelectedImages] = useState<string[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { t } = useTranslation()
 
@@ -99,15 +103,7 @@ export const MessageInput = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files) {
-      Array.from(files).forEach((file) => {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            setSelectedImages((prev) => [...prev, e.target?.result as string])
-          }
-          reader.readAsDataURL(file)
-        }
-      })
+      onFileSelect(files)
     }
   }
 
@@ -116,7 +112,7 @@ export const MessageInput = ({
   }
 
   const handleRemoveImage = (index: number) => {
-    setSelectedImages((prev) => prev.filter((_, i) => i !== index))
+    onRemoveImage(index)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }

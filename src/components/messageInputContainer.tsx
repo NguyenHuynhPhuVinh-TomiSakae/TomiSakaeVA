@@ -12,7 +12,7 @@ const NO_SPEECH_TIMEOUT = 3000
 type AudioContextType = typeof AudioContext
 
 type Props = {
-  onChatProcessStart: (text: string) => void
+  onChatProcessStart: (text: string, images?: string[]) => void
 }
 
 export const MessageInputContainer = ({ onChatProcessStart }: Props) => {
@@ -28,6 +28,8 @@ export const MessageInputContainer = ({ onChatProcessStart }: Props) => {
   const audioChunksRef = useRef<Blob[]>([])
   const isListeningRef = useRef(false)
   const [isListening, setIsListening] = useState(false)
+  const [selectedImages, setSelectedImages] = useState<string[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { t } = useTranslation()
 
@@ -255,8 +257,9 @@ export const MessageInputContainer = ({ onChatProcessStart }: Props) => {
         const pressDuration = Date.now() - (keyPressStartTime.current || 0)
         // 押してから1秒以上 かつ 文字が存在する場合のみ送信
         if (pressDuration >= 1000 && trimmedTranscriptRef) {
-          onChatProcessStart(trimmedTranscriptRef)
+          onChatProcessStart(trimmedTranscriptRef, selectedImages)
           setUserMessage('')
+          setSelectedImages([])
         }
         isKeyboardTriggered.current = false
       }
@@ -268,6 +271,7 @@ export const MessageInputContainer = ({ onChatProcessStart }: Props) => {
     sendAudioBuffer,
     audioContext,
     onChatProcessStart,
+    selectedImages,
   ])
 
   const toggleListening = useCallback(() => {
@@ -307,10 +311,14 @@ export const MessageInputContainer = ({ onChatProcessStart }: Props) => {
   // メッセージ送信
   const handleSendMessage = useCallback(() => {
     if (userMessage.trim()) {
-      onChatProcessStart(userMessage)
+      onChatProcessStart(userMessage, selectedImages)
       setUserMessage('')
+      setSelectedImages([])
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
-  }, [userMessage, onChatProcessStart])
+  }, [userMessage, selectedImages, onChatProcessStart])
 
   // メッセージ入力
   const handleInputChange = useCallback(
@@ -320,13 +328,34 @@ export const MessageInputContainer = ({ onChatProcessStart }: Props) => {
     []
   )
 
+  // Thêm handlers cho việc xử lý ảnh
+  const handleFileSelect = useCallback((files: FileList) => {
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setSelectedImages((prev) => [...prev, e.target?.result as string])
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+  }, [])
+
+  const handleRemoveImage = useCallback((index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index))
+  }, [])
+
   return (
     <MessageInput
       userMessage={userMessage}
-      isMicRecording={isListening} // useState の値を使用
+      isMicRecording={isListening}
+      selectedImages={selectedImages}
       onChangeUserMessage={handleInputChange}
       onClickMicButton={toggleListening}
       onClickSendButton={handleSendMessage}
+      onFileSelect={handleFileSelect}
+      onRemoveImage={handleRemoveImage}
+      fileInputRef={fileInputRef}
     />
   )
 }

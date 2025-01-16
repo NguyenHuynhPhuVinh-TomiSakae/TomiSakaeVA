@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { getAIChatResponseStream } from '@/features/chat/aiChatFactory'
 import { Message, EmotionType } from '@/features/messages/messages'
 import { speakCharacter } from '@/features/messages/speakCharacter'
@@ -10,6 +11,11 @@ import { messageSelectors } from '../messages/messageSelectors'
 import webSocketStore from '@/features/stores/websocketStore'
 import i18next from 'i18next'
 import toastStore from '@/features/stores/toast'
+
+type MessageContent = string | [
+  { type: 'text'; text: string },
+  { type: 'image'; image: string }
+]
 
 /**
  * 受け取ったメッセージを処理し、AIの応答を生成して発話させる
@@ -36,15 +42,15 @@ export const speakMessageHandler = async (receivedMessage: string) => {
       // コードブロックの分割
       isCodeBlock = true
       const [first, ...rest] = remainingMessage.split(delimiter)
-      ;[remainingMessage, codeBlockText] = [
-        first,
-        rest.join(delimiter).replace(/^\n/, ''),
-      ]
+        ;[remainingMessage, codeBlockText] = [
+          first,
+          rest.join(delimiter).replace(/^\n/, ''),
+        ]
     } else if (remainingMessage == '' && isCodeBlock) {
       // コードブロックの分割
       let code = ''
       const [first, ...rest] = codeBlockText.split(delimiter)
-      ;[code, remainingMessage] = [first, rest.join(delimiter)]
+        ;[code, remainingMessage] = [first, rest.join(delimiter)]
       addedChatLog.push({
         role: 'assistant',
         content: logText,
@@ -343,33 +349,32 @@ export const processAIResponse = async (
  * 画面のチャット欄から入力されたときに実行される処理
  * Youtubeでチャット取得した場合もこの関数を使用する
  */
-export const handleSendChatFn = () => async (text: string) => {
-  const newMessage = text
+export const handleSendChatFn = () => async (text: string, images?: string[]) => {
   const timestamp = new Date().toISOString()
-
-  if (newMessage === null) return
+  if (!text.trim()) return
 
   const ss = settingsStore.getState()
   const hs = homeStore.getState()
   const sls = slideStore.getState()
   const wsManager = webSocketStore.getState().wsManager
 
+  // Xử lý cho chế độ External Linkage
   if (ss.externalLinkageMode) {
     homeStore.setState({ chatProcessing: true })
 
     if (wsManager?.websocket?.readyState === WebSocket.OPEN) {
-      // ユーザーの発言を追加して表示
+      // Cập nhật chat log với tin nhắn của user
       const updateLog: Message[] = [
         ...hs.chatLog,
-        { role: 'user', content: newMessage, timestamp: timestamp },
+        { role: 'user', content: text, timestamp: timestamp },
       ]
       homeStore.setState({
         chatLog: updateLog,
       })
 
-      // WebSocket送信
+      // Gửi tin nhắn qua WebSocket
       wsManager.websocket.send(
-        JSON.stringify({ content: newMessage, type: 'chat' })
+        JSON.stringify({ content: text, type: 'chat' })
       )
     } else {
       toastStore.getState().addToast({
@@ -381,97 +386,102 @@ export const handleSendChatFn = () => async (text: string) => {
         chatProcessing: false,
       })
     }
-  } else if (ss.realtimeAPIMode) {
+    return
+  }
+
+  // Xử lý cho chế độ Realtime API 
+  if (ss.realtimeAPIMode) {
     if (wsManager?.websocket?.readyState === WebSocket.OPEN) {
-      // ユーザーの発言を追加して表示
       const updateLog: Message[] = [
         ...hs.chatLog,
-        { role: 'user', content: newMessage, timestamp: timestamp },
+        { role: 'user', content: text, timestamp: timestamp },
       ]
       homeStore.setState({
         chatLog: updateLog,
       })
     }
-  } else {
-    let systemPrompt = ss.systemPrompt
-    if (ss.slideMode) {
-      if (sls.isPlaying) {
-        return
-      }
+    return
+  }
 
-      try {
-        let scripts = JSON.stringify(
-          require(
-            `../../../public/slides/${sls.selectedSlideDocs}/scripts.json`
-          )
-        )
-        systemPrompt = systemPrompt.replace('{{SCRIPTS}}', scripts)
+  // Xử lý mặc định với AI chat
+  homeStore.setState({ chatProcessing: true })
 
-        let supplement = ''
-        try {
-          const response = await fetch(
-            `/api/getSupplement?slideDocs=${sls.selectedSlideDocs}`
-          )
-          if (!response.ok) {
-            throw new Error('Failed to fetch supplement')
-          }
-          const data = await response.json()
-          supplement = data.supplement
-          systemPrompt = systemPrompt.replace('{{SUPPLEMENT}}', supplement)
-        } catch (e) {
-          console.error('supplement.txtの読み込みに失敗しました:', e)
-        }
-
-        const answerString = await judgeSlide(newMessage, scripts, supplement)
-        const answer = JSON.parse(answerString)
-        if (answer.judge === 'true' && answer.page !== '') {
-          goToSlide(Number(answer.page))
-          systemPrompt += `\n\nEspecial Page Number is ${answer.page}.`
-        }
-      } catch (e) {
-        console.error(e)
-      }
+  // Xử lý slide mode
+  let systemPrompt = ss.systemPrompt
+  if (ss.slideMode) {
+    if (sls.isPlaying) {
+      return
     }
-
-    homeStore.setState({ chatProcessing: true })
-    // ユーザーの発言を追加して表示
-    const messageLog: Message[] = [
-      ...hs.chatLog,
-      {
-        role: 'user',
-        content: hs.modalImage
-          ? [
-              { type: 'text', text: newMessage },
-              { type: 'image', image: hs.modalImage },
-            ]
-          : newMessage,
-        timestamp: timestamp,
-      },
-    ]
-    if (hs.modalImage) {
-      homeStore.setState({ modalImage: '' })
-    }
-    homeStore.setState({ chatLog: messageLog })
-
-    const messages: Message[] = [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      ...messageSelectors.getProcessedMessages(
-        messageLog,
-        ss.includeTimestampInUserMessage
-      ),
-    ]
 
     try {
-      await processAIResponse(messageLog, messages)
+      let scripts = JSON.stringify(
+        require(
+          `../../../public/slides/${sls.selectedSlideDocs}/scripts.json`
+        )
+      )
+      systemPrompt = systemPrompt.replace('{{SCRIPTS}}', scripts)
+
+      let supplement = ''
+      try {
+        const response = await fetch(
+          `/api/getSupplement?slideDocs=${sls.selectedSlideDocs}`
+        )
+        if (!response.ok) {
+          throw new Error('Failed to fetch supplement')
+        }
+        const data = await response.json()
+        supplement = data.supplement
+        systemPrompt = systemPrompt.replace('{{SUPPLEMENT}}', supplement)
+      } catch (e) {
+        console.error('supplement.txtの読み込みに失敗しました:', e)
+      }
+
+      const answerString = await judgeSlide(text, scripts, supplement)
+      const answer = JSON.parse(answerString)
+      if (answer.judge === 'true' && answer.page !== '') {
+        goToSlide(Number(answer.page))
+        systemPrompt += `\n\nEspecial Page Number is ${answer.page}.`
+      }
     } catch (e) {
       console.error(e)
     }
-
-    homeStore.setState({ chatProcessing: false })
   }
+
+  // Tạo message content với cả text và images
+  const messageContent: MessageContent = images?.length
+    ? [
+      { type: 'text' as const, text },
+      { type: 'image' as const, image: images[0] }
+    ]
+    : text
+
+  // Cập nhật message log
+  const messageLog: Message[] = [
+    ...hs.chatLog,
+    {
+      role: 'user',
+      content: messageContent,
+      timestamp: timestamp,
+    },
+  ]
+
+  homeStore.setState({ chatLog: messageLog })
+
+  const messages: Message[] = [
+    {
+      role: 'system',
+      content: systemPrompt, // Sử dụng systemPrompt đã được cập nhật từ slide mode
+    },
+    ...messageSelectors.getProcessedMessages(messageLog, ss.includeTimestampInUserMessage),
+  ]
+
+  try {
+    await processAIResponse(messageLog, messages)
+  } catch (e) {
+    console.error(e)
+  }
+
+  homeStore.setState({ chatProcessing: false })
 }
 
 /**
@@ -479,135 +489,135 @@ export const handleSendChatFn = () => async (text: string) => {
  */
 export const handleReceiveTextFromWsFn =
   () =>
-  async (
-    text: string,
-    role?: string,
-    emotion: EmotionType = 'neutral',
-    type?: string
-  ) => {
-    if (text === null || role === undefined) return
+    async (
+      text: string,
+      role?: string,
+      emotion: EmotionType = 'neutral',
+      type?: string
+    ) => {
+      if (text === null || role === undefined) return
 
-    const ss = settingsStore.getState()
-    const hs = homeStore.getState()
-    const wsManager = webSocketStore.getState().wsManager
+      const ss = settingsStore.getState()
+      const hs = homeStore.getState()
+      const wsManager = webSocketStore.getState().wsManager
 
-    if (ss.externalLinkageMode) {
-      console.log('ExternalLinkage Mode: true')
-    } else {
-      console.log('ExternalLinkage Mode: false')
-      return
-    }
-
-    homeStore.setState({ chatProcessing: true })
-
-    if (role !== 'user') {
-      const updateLog: Message[] = [...hs.chatLog]
-
-      if (type === 'start') {
-        // startの場合は何もしない（textは空文字のため）
-        console.log('Starting new response')
-        wsManager?.setTextBlockStarted(false)
-      } else if (
-        updateLog.length > 0 &&
-        updateLog[updateLog.length - 1].role === role &&
-        wsManager?.textBlockStarted
-      ) {
-        // 既存のメッセージに追加
-        updateLog[updateLog.length - 1].content += text
+      if (ss.externalLinkageMode) {
+        console.log('ExternalLinkage Mode: true')
       } else {
-        // 新しいメッセージを追加
-        updateLog.push({ role: role, content: text })
-        wsManager?.setTextBlockStarted(true)
+        console.log('ExternalLinkage Mode: false')
+        return
       }
 
-      if (role === 'assistant' && text !== '') {
-        let aiText = `[${emotion}] ${text}`
-        try {
-          // 文ごとに音声を生成 & 再生、返答を表示
-          speakCharacter(
-            {
-              message: text,
-              emotion: emotion,
-            },
-            () => {
-              homeStore.setState({
-                chatLog: updateLog,
-                assistantMessage: (() => {
-                  const content = updateLog[updateLog.length - 1].content
-                  return typeof content === 'string' ? content : ''
-                })(),
-              })
-            },
-            () => {
-              // hs.decrementChatProcessingCount()
-            }
-          )
-        } catch (e) {
-          console.error('Error in speakCharacter:', e)
+      homeStore.setState({ chatProcessing: true })
+
+      if (role !== 'user') {
+        const updateLog: Message[] = [...hs.chatLog]
+
+        if (type === 'start') {
+          // startの場合は何もしない（textは空文字のため）
+          console.log('Starting new response')
+          wsManager?.setTextBlockStarted(false)
+        } else if (
+          updateLog.length > 0 &&
+          updateLog[updateLog.length - 1].role === role &&
+          wsManager?.textBlockStarted
+        ) {
+          // 既存のメッセージに追加
+          updateLog[updateLog.length - 1].content += text
+        } else {
+          // 新しいメッセージを追加
+          updateLog.push({ role: role, content: text })
+          wsManager?.setTextBlockStarted(true)
         }
-      } else {
-        homeStore.setState({
-          chatLog: updateLog,
-        })
+
+        if (role === 'assistant' && text !== '') {
+          let aiText = `[${emotion}] ${text}`
+          try {
+            // 文ごとに音声を生成 & 再生、返答を表示
+            speakCharacter(
+              {
+                message: text,
+                emotion: emotion,
+              },
+              () => {
+                homeStore.setState({
+                  chatLog: updateLog,
+                  assistantMessage: (() => {
+                    const content = updateLog[updateLog.length - 1].content
+                    return typeof content === 'string' ? content : ''
+                  })(),
+                })
+              },
+              () => {
+                // hs.decrementChatProcessingCount()
+              }
+            )
+          } catch (e) {
+            console.error('Error in speakCharacter:', e)
+          }
+        } else {
+          homeStore.setState({
+            chatLog: updateLog,
+          })
+        }
+
+        if (type === 'end') {
+          // レスポンスの終了処理
+          console.log('Response ended')
+          wsManager?.setTextBlockStarted(false)
+          homeStore.setState({ chatProcessing: false })
+        }
       }
 
-      if (type === 'end') {
-        // レスポンスの終了処理
-        console.log('Response ended')
-        wsManager?.setTextBlockStarted(false)
-        homeStore.setState({ chatProcessing: false })
-      }
+      homeStore.setState({ chatProcessing: type !== 'end' })
     }
-
-    homeStore.setState({ chatProcessing: type !== 'end' })
-  }
 
 /**
  * RealtimeAPIからのテキストまたは音声データを受信したときの処理
  */
 export const handleReceiveTextFromRtFn =
   () =>
-  async (text?: string, role?: string, type?: string, buffer?: ArrayBuffer) => {
-    if ((!text && !buffer) || role === undefined) return
+    async (text?: string, role?: string, type?: string, buffer?: ArrayBuffer) => {
+      if ((!text && !buffer) || role === undefined) return
 
-    const ss = settingsStore.getState()
-    const hs = homeStore.getState()
+      const ss = settingsStore.getState()
+      const hs = homeStore.getState()
 
-    if (ss.realtimeAPIMode) {
-      console.log('realtime api mode: true')
-    } else if (ss.audioMode) {
-      console.log('audio mode: true')
-    } else {
-      console.log('realtime api mode: false')
-      return
-    }
-
-    homeStore.setState({ chatProcessing: true })
-
-    if (role == 'assistant') {
-      const updateLog: Message[] = [...hs.chatLog]
-
-      if (type?.includes('response.audio') && buffer !== undefined) {
-        console.log('response.audio:')
-        try {
-          speakCharacter(
-            {
-              emotion: 'neutral',
-              message: '',
-              buffer: buffer,
-            },
-            () => {},
-            () => {}
-          )
-        } catch (e) {
-          console.error('Error in speakCharacter:', e)
-        }
-      } else if (type === 'response.content_part.done' && text !== undefined) {
-        updateLog.push({ role: role, content: text })
-        homeStore.setState({
-          chatLog: updateLog,
-        })
+      if (ss.realtimeAPIMode) {
+        console.log('realtime api mode: true')
+      } else if (ss.audioMode) {
+        console.log('audio mode: true')
+      } else {
+        console.log('realtime api mode: false')
+        return
       }
+
+      homeStore.setState({ chatProcessing: true })
+
+      if (role == 'assistant') {
+        const updateLog: Message[] = [...hs.chatLog]
+
+        if (type?.includes('response.audio') && buffer !== undefined) {
+          console.log('response.audio:')
+          try {
+            speakCharacter(
+              {
+                emotion: 'neutral',
+                message: '',
+                buffer: buffer,
+              },
+              () => { },
+              () => { }
+            )
+          } catch (e) {
+            console.error('Error in speakCharacter:', e)
+          }
+        } else if (type === 'response.content_part.done' && text !== undefined) {
+          updateLog.push({ role: role, content: text })
+          homeStore.setState({
+            chatLog: updateLog,
+          })
+        }
+      }
+      homeStore.setState({ chatProcessing: false })
     }
-    homeStore.setState({ chatProcessing: false })
-  }

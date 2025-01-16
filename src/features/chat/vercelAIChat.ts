@@ -87,9 +87,29 @@ export async function getVercelAIChatResponseStream(
     useSearchGrounding,
   } = getAIConfig()
 
-  if (messages.length > 0 && messages[0].role === 'system') {
+  const processedMessages = messages.map((msg) => {
+    if (Array.isArray(msg.content)) {
+      return {
+        ...msg,
+        content: msg.content.map((part) => {
+          if (part.type === 'image') {
+            return {
+              type: 'image_url',
+              image_url: {
+                url: part.image,
+              },
+            }
+          }
+          return part
+        }),
+      }
+    }
+    return msg
+  })
+
+  if (processedMessages.length > 0 && processedMessages[0].role === 'system') {
     const ss = settingsStore.getState()
-    messages[0].content = `You are ${ss.characterName}. ${messages[0].content}`
+    processedMessages[0].content = `You are ${ss.characterName}. ${processedMessages[0].content}`
   }
 
   const response = await fetch('/api/aiChat', {
@@ -98,7 +118,7 @@ export async function getVercelAIChatResponseStream(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      messages,
+      messages: processedMessages,
       apiKey: aiApiKey,
       aiService: selectAIService,
       model: selectAIModel,

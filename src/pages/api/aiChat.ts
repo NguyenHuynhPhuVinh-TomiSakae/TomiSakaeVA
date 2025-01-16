@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Message } from '@/features/messages/messages'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
@@ -8,6 +9,7 @@ import { createAzure } from '@ai-sdk/azure'
 import { createDeepSeek } from '@ai-sdk/deepseek'
 import { streamText, generateText, CoreMessage } from 'ai'
 import { NextRequest } from 'next/server'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 type AIServiceKey =
   | 'openai'
@@ -43,6 +45,10 @@ export default async function handler(req: NextRequest) {
     )
   }
 
+  // Log request body
+  const body = await req.json()
+  console.log('API Request body:', body)
+
   const {
     messages,
     apiKey,
@@ -51,7 +57,10 @@ export default async function handler(req: NextRequest) {
     azureEndpoint,
     stream,
     useSearchGrounding,
-  } = await req.json()
+  } = body
+
+  // Log messages array
+  console.log('Messages received:', messages)
 
   let aiApiKey = apiKey
   if (!aiApiKey) {
@@ -142,6 +151,73 @@ export default async function handler(req: NextRequest) {
   const options = isUseSearchGrounding ? { useSearchGrounding: true } : {}
   console.log('options', options)
 
+  // Xử lý đặc biệt cho Gemini khi có ảnh
+  if (aiService === 'google') {
+    const lastMessage = messages[messages.length - 1]
+
+    if (Array.isArray(lastMessage.content)) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({
+          model: "gemini-2.0-flash-exp",
+          generationConfig: {
+            temperature: 1,
+            topP: 0.95,
+            topK: 40,
+            maxOutputTokens: 8192,
+          }
+        })
+
+        const chat = model.startChat({
+          history: messages
+            .filter((msg: Message) => msg.role !== 'system')
+            .slice(0, -1) // Bỏ message cuối cùng vì sẽ gửi riêng
+            .map((msg: Message) => ({
+              role: msg.role === 'assistant' ? 'model' : msg.role,
+              parts: [{ text: msg.content as string }]
+            }))
+        })
+
+        const result = await chat.sendMessage([
+          { text: lastMessage.content[0].text },
+          {
+            inlineData: {
+              data: lastMessage.content[1].image_url.url.split(',')[1],
+              mimeType: 'image/jpeg'
+            }
+          }
+        ])
+
+        const response = await result.response
+        const text = response.text()
+
+        // Tạo response stream theo định dạng Vercel AI SDK
+        const encoder = new TextEncoder()
+        const stream = new ReadableStream({
+          async start(controller) {
+            controller.enqueue(encoder.encode(`0: ${JSON.stringify(text)}\n`))
+            controller.close()
+          }
+        })
+
+        return new Response(stream)
+
+      } catch (error) {
+        console.error('Gemini API error:', error)
+        return new Response(
+          JSON.stringify({
+            error: 'Gemini API Error',
+            errorCode: 'AIAPIError'
+          }),
+          {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        )
+      }
+    }
+  }
+
   try {
     if (stream) {
       const result = await streamText({
@@ -212,15 +288,15 @@ function consolidateMessages(messages: Message[]) {
   let combinedContent:
     | string
     | [
-        {
-          type: 'text'
-          text: string
-        },
-        {
-          type: 'image'
-          image: string
-        },
-      ]
+      {
+        type: 'text'
+        text: string
+      },
+      {
+        type: 'image'
+        image: string
+      },
+    ]
 
   messages.forEach((message, index) => {
     if (message.role === lastRole) {

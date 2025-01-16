@@ -30,10 +30,12 @@ export default async function handler(
         return {
           ...msg,
           content: msg.content.map((content: any) => {
-            if (content.type === 'image') {
+            if (content.type === 'image_url') {
               return {
-                type: 'image',
-                image: '[image data omitted]',
+                type: 'image_url',
+                image_url: {
+                  url: '[image data omitted]',
+                },
               }
             }
             return content

@@ -11,6 +11,16 @@ export async function getAIChatResponseStream(
 ): Promise<ReadableStream<string> | null> {
   const ss = settingsStore.getState()
 
+  if (ss.selectAIService === 'google') {
+    const lastMessage = messages[messages.length - 1]
+    if (
+      Array.isArray(lastMessage.content) &&
+      lastMessage.content[1]?.type === 'image'
+    ) {
+      return getVercelAIChatResponseStream(messages)
+    }
+  }
+
   if (ss.selectAIService == 'openai' && ss.audioMode) {
     return getOpenAIAudioChatResponseStream(messages)
   }

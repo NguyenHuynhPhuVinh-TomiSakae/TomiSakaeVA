@@ -16,32 +16,32 @@ export const Form = () => {
   const slidePlaying = slideStore((s) => s.isPlaying)
   const chatProcessingCount = homeStore((s) => s.chatProcessingCount)
   const [delayedText, setDelayedText] = useState('')
+  const [selectedImages, setSelectedImages] = useState<string[]>([])
   const handleSendChat = handleSendChatFn()
 
   useEffect(() => {
-    // テキストと画像がそろったら、チャットを送信
+    // Gửi chat khi có text và ảnh
     if (delayedText && modalImage) {
-      handleSendChat(delayedText)
+      handleSendChat(delayedText, [modalImage])
       setDelayedText('')
+      homeStore.setState({ modalImage: undefined })
     }
   }, [modalImage, delayedText, handleSendChat])
 
   const hookSendChat = useCallback(
-    (text: string) => {
-      // すでにmodalImageが存在する場合は、Webcamのキャプチャーをスキップ
-      if (!homeStore.getState().modalImage) {
-        homeStore.setState({ triggerShutter: true })
-      }
-
-      // MENUの中でshowCameraがtrueの場合、画像が取得されるまで待機
-      if (webcamStatus || captureStatus) {
-        // Webcamが開いている場合
-        setDelayedText(text) // 画像が取得されるまで遅延させる
-      } else {
-        handleSendChat(text)
+    (text: string, images?: string[]) => {
+      if (images?.length) {
+        // Chỉ gửi khi có ảnh từ input
+        handleSendChat(text, images)
+      } else if (!homeStore.getState().modalImage) {
+        if (webcamStatus || captureStatus) {
+          setDelayedText(text) // Đợi ảnh từ webcam
+        } else {
+          handleSendChat(text) // Gửi khi không có ảnh
+        }
       }
     },
-    [handleSendChat, webcamStatus, captureStatus, setDelayedText]
+    [handleSendChat, webcamStatus, captureStatus]
   )
 
   return slideMode &&
