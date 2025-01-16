@@ -86,6 +86,7 @@ const ModelProvider = () => {
         settingsStore.setState({
           conversationContinuityMode: false,
           slideMode: false,
+          mediaInputMode: false,
         })
         slideStore.setState({
           isPlaying: false,
@@ -100,6 +101,11 @@ const ModelProvider = () => {
         if (!googleSearchGroundingModels.includes(selectAIModel as any)) {
           settingsStore.setState({ useSearchGrounding: false })
         }
+      } else {
+        settingsStore.setState({
+          useSearchGrounding: false,
+          mediaInputMode: false,
+        })
       }
     },
     []
@@ -273,6 +279,10 @@ const ModelProvider = () => {
                       onChange={(e) => {
                         const model = e.target.value
                         settingsStore.setState({ selectAIModel: model })
+
+                        if (!gemini20Models.includes(model)) {
+                          settingsStore.setState({ mediaInputMode: false })
+                        }
                       }}
                     >
                       <option value="gpt-4o-realtime-preview-2024-10-01">
@@ -344,6 +354,10 @@ const ModelProvider = () => {
                       onChange={(e) => {
                         const model = e.target.value
                         settingsStore.setState({ selectAIModel: model })
+
+                        if (!gemini20Models.includes(model)) {
+                          settingsStore.setState({ mediaInputMode: false })
+                        }
                       }}
                     >
                       <option value="gpt-4o-audio-preview-2024-10-01">
@@ -479,6 +493,11 @@ const ModelProvider = () => {
                     // Add check for search grounding compatibility
                     if (!googleSearchGroundingModels.includes(model as any)) {
                       settingsStore.setState({ useSearchGrounding: false })
+                    }
+                    if (!gemini20Models.includes(model)) {
+                      settingsStore.setState({
+                        mediaInputMode: false,
+                      })
                     }
                   }}
                 >
