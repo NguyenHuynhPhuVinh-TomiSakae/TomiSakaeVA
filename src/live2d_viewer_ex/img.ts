@@ -167,8 +167,31 @@ const images = [
         "id": 28,
         "src": "/live2d_viewer_ex/28/background.png",
         "alt": "Mô hình 28"
-    }
+    },
 
+    {
+        "id": 29,
+        "src": "/live2d_viewer_ex/29/background.png",
+        "alt": "Mô hình 29"
+    },
+
+    {
+        "id": 30,
+        "src": "/live2d_viewer_ex/30/background.png",
+        "alt": "Mô hình 30"
+    },
+
+    {
+        "id": 31,
+        "src": "/live2d_viewer_ex/31/background.png",
+        "alt": "Mô hình 31"
+    },
+
+    {
+        "id": 32,
+        "src": "/live2d_viewer_ex/32/background.png",
+        "alt": "Mô hình 32"
+    },
 ];
 
 export default images;
