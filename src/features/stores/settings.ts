@@ -153,7 +153,7 @@ interface ModelType {
 }
 
 interface Live2DType {
-  live2dType: 'default' | 'azur'
+  live2dType: 'default' | 'azur' | 'live2dviewerex'
   selectedModel: string | null
   isMouseTracking: boolean
   isRandomAnimation: boolean

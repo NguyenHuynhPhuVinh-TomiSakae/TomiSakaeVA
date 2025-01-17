@@ -83,7 +83,6 @@ const Live2DComponent = () => {
     if (!canvasContainerRef.current) return
     const hs = homeStore.getState()
 
-    // Cập nhật loading state trong store
     homeStore.setState({ isModelLoading: true })
 
     try {
@@ -105,14 +104,19 @@ const Live2DComponent = () => {
 
       modelRef.current = newModel
       setModel(newModel)
-      hs.live2dViewer = newModel
+
+      // Lưu viewer vào homeStore
+      homeStore.setState({
+        live2dViewer: newModel,
+        isModelLoading: false,
+      })
+
+      // Đợi 1 frame để đảm bảo state đã được cập nhật
+      await new Promise((resolve) => requestAnimationFrame(resolve))
 
       await Live2DHandler.resetToIdle()
     } catch (error) {
       console.error('Failed to load Live2D model:', error)
-    } finally {
-      // Cập nhật loading state trong store
-      homeStore.setState({ isModelLoading: false })
     }
   }
 
@@ -132,7 +136,11 @@ const Live2DComponent = () => {
     }
 
     const handleMouseTracking = (event: PointerEvent) => {
-      if (isMouseTracking && model.focus && live2dType === 'azur') {
+      if (
+        isMouseTracking &&
+        model.focus &&
+        (live2dType === 'azur' || live2dType === 'live2dviewerex')
+      ) {
         model.focus(event.clientX, event.clientY)
       }
     }

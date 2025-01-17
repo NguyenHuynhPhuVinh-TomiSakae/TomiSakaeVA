@@ -8,6 +8,9 @@
 # Mô hình Azur Lane
 /public/azur/models/*
 
+# Mô hình Live2D Viewer EX
+/public/live2d_viewer_ex/*
+
 # testing
 /coverage
 

@@ -7,6 +7,7 @@ import Based from './based'
 import AI from './ai'
 import Voice from './voice'
 import AzurLane from './azur_lane'
+import Live2DViewerEX from './live2d_viewer_ex'
 import Other from './other'
 
 type Props = {
@@ -37,7 +38,7 @@ const Header = ({ onClickClose }: Pick<Props, 'onClickClose'>) => {
 }
 
 // タブの定義
-type TabKey = 'general' | 'ai' | 'voice' | 'azur_lane' | 'other'
+type TabKey = 'general' | 'ai' | 'voice' | 'azur_lane' | 'live2d_viewer_ex' | 'other'
 
 const Main = () => {
   const { t } = useTranslation()
@@ -61,6 +62,10 @@ const Main = () => {
       label: t('AzurLaneSettings'),
     },
     {
+      key: 'live2d_viewer_ex',
+      label: t('Live2DViewerEXSettings'),
+    },
+    {
       key: 'other',
       label: t('OtherSettings'),
     },
@@ -76,6 +81,8 @@ const Main = () => {
         return <Voice />
       case 'azur_lane':
         return <AzurLane />
+      case 'live2d_viewer_ex':
+        return <Live2DViewerEX />
       case 'other':
         return <Other />
     }

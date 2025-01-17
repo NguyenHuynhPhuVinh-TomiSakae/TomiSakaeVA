@@ -20,7 +20,7 @@ export class Live2DHandler {
     let motion: string | undefined
 
     // Chỉ set motion và expression nếu không phải là Azur Lane
-    if (ss.live2dType !== 'azur') {
+    if (ss.live2dType !== 'azur' && ss.live2dType !== 'live2dviewerex') {
       switch (talk.emotion) {
         case 'neutral':
           expression = ss.neutralEmotions[Math.floor(Math.random() * ss.neutralEmotions.length)]
@@ -82,7 +82,7 @@ export class Live2DHandler {
     const audioUrl = URL.createObjectURL(audioBlob)
 
     // Xử lý motion và expression
-    if (ss.live2dType === 'azur') {
+    if (ss.live2dType === 'azur' || ss.live2dType === 'live2dviewerex') {
       if (ss.isRandomAnimation) {
         live2dViewer.motion('Animation')
       } else {
@@ -121,12 +121,17 @@ export class Live2DHandler {
     const hs = homeStore.getState()
     const ss = settingsStore.getState()
     const live2dViewer = hs.live2dViewer
-    if (!live2dViewer) return
+
+    if (!live2dViewer) {
+      return;
+    }
 
     // Live2Dモデル以外の場合は早期リターン
-    if (ss.modelType !== 'live2d') return
+    if (ss.modelType !== 'live2d') {
+      return;
+    }
 
-    if (ss.live2dType === 'azur') {
+    if (ss.live2dType === 'azur' || ss.live2dType === 'live2dviewerex') {
       if (ss.isRandomAnimation) {
         live2dViewer.motion('Animation')
       } else {
@@ -158,9 +163,9 @@ export class Live2DHandler {
         return
       }
 
-      if (currentSs.live2dType === 'azur') {
+      if (currentSs.live2dType === 'azur' || currentSs.live2dType === 'live2dviewerex') {
         if (currentSs.isRandomAnimation) {
-          live2dViewer.motion('Animation')  // Thay đổi từ 'Idle' thành 'Animation'
+          live2dViewer.motion('Animation')
         } else {
           live2dViewer.motion('Idle')
         }

@@ -3,25 +3,19 @@ import { useTranslation } from 'react-i18next'
 import settingsStore from '@/features/stores/settings'
 import { TextButton } from '../textButton'
 import { useCallback, useState, useRef, useEffect } from 'react'
-import modelData from '@/azur_lane/Live2D'
 import { Live2DHandler } from '@/features/messages/live2dHandler'
+import images from '@/live2d_viewer_ex/img'
+import homeStore from '@/features/stores/home'
 
-interface AzurLaneModel {
-    modelid: string;
-    name: string;
-    img?: string;
-    model: string;
-}
-
-const AzurLane = () => {
+const Live2DViewerEX = () => {
     const { t } = useTranslation()
-    const { live2dType, selectedModel, selectedLive2DPath, isMouseTracking, isRandomAnimation } = settingsStore()
+    const { live2dType, selectedModel, isMouseTracking, isRandomAnimation } = settingsStore()
     const [loadedImages, setLoadedImages] = useState<{ [key: string]: boolean }>({})
     const selectedModelRef = useRef<HTMLDivElement>(null)
     const topRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        if (live2dType === 'azur') {
+        if (live2dType === 'live2dviewerex') {
             const scrollTopButton = document.createElement('button')
             scrollTopButton.innerHTML = '↑ ' + t('ScrollToTop')
             scrollTopButton.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-full shadow-lg hover:bg-primary/80 transition-colors duration-300 z-50'
@@ -38,14 +32,11 @@ const AzurLane = () => {
 
     const handleLive2DTypeChange = useCallback((newMode: boolean) => {
         if (newMode) {
-            const currentModel = selectedModel
-                ? modelData.models.find(m => m.modelid === selectedModel)
-                : modelData.models[0];
-
+            const modelId = selectedModel || '1'
             settingsStore.setState({
-                live2dType: 'azur',
-                selectedModel: currentModel?.modelid || modelData.models[0].modelid,
-                selectedLive2DPath: currentModel?.model || modelData.models[0].model
+                live2dType: 'live2dviewerex',
+                selectedModel: modelId,
+                selectedLive2DPath: `/live2d_viewer_ex/${modelId}/character/model0.json`
             });
         } else {
             settingsStore.setState({
@@ -55,17 +46,15 @@ const AzurLane = () => {
         }
     }, [selectedModel]);
 
-    const handleModelSelect = (model: AzurLaneModel) => {
-        const selectedModelData = modelData.models.find(m => m.modelid === model.modelid);
-
-        if (live2dType === 'azur' && selectedModelData) {
+    const handleModelSelect = (modelId: string) => {
+        if (live2dType === 'live2dviewerex') {
             settingsStore.setState({
-                selectedModel: model.modelid,
-                selectedLive2DPath: selectedModelData.model
+                selectedModel: modelId,
+                selectedLive2DPath: `/live2d_viewer_ex/${modelId}/character/model0.json`
             });
         } else {
             settingsStore.setState({
-                selectedModel: model.modelid,
+                selectedModel: modelId,
                 selectedLive2DPath: '/live2d/nike01/nike01.model3.json'
             });
         }
@@ -91,16 +80,16 @@ const AzurLane = () => {
     return (
         <div ref={topRef}>
             <div className="mb-16 typography-20 font-bold">
-                {t('UseAzurLaneModel')}
+                {t('UseLive2DViewerEXModel')}
             </div>
             <div className="mb-24">
                 <TextButton
-                    onClick={() => handleLive2DTypeChange(live2dType !== 'azur')}
+                    onClick={() => handleLive2DTypeChange(live2dType !== 'live2dviewerex')}
                 >
-                    {live2dType === 'azur' ? t('StatusOn') : t('StatusOff')}
+                    {live2dType === 'live2dviewerex' ? t('StatusOn') : t('StatusOff')}
                 </TextButton>
             </div>
-            {live2dType === 'azur' && (
+            {live2dType === 'live2dviewerex' && (
                 <>
                     <div className="mb-16">
                         <div className="mb-16 typography-16 font-bold">
@@ -137,18 +126,18 @@ const AzurLane = () => {
                             )}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-16 gap-y-24">
-                            {modelData.models.filter(model => model.img).map((model) => (
+                            {images.map((image) => (
                                 <div
-                                    key={model.modelid}
+                                    key={image.id}
                                     className="flex flex-col items-center"
-                                    ref={selectedModel === model.modelid ? selectedModelRef : null}
+                                    ref={selectedModel === image.id.toString() ? selectedModelRef : null}
                                 >
                                     <div
-                                        onClick={() => handleModelSelect(model)}
+                                        onClick={() => handleModelSelect(image.id.toString())}
                                         className={`
                                         relative cursor-pointer
                                         transition-all duration-500 ease-in-out
-                                        ${selectedModel === model.modelid ?
+                                        ${selectedModel === image.id.toString() ?
                                                 'transform scale-105 shadow-xl ring-4 ring-primary/30 rounded-lg' :
                                                 'hover:scale-102 hover:shadow-md'
                                             }
@@ -157,13 +146,13 @@ const AzurLane = () => {
                                         <div className={`
                                         rounded-lg overflow-hidden
                                         border-2 transition-colors duration-300
-                                        ${selectedModel === model.modelid ?
+                                        ${selectedModel === image.id.toString() ?
                                                 'border-primary shadow-lg shadow-primary/40' :
                                                 'border-surface2 hover:border-primary/30'
                                             }
                                     `}>
                                             <div className="aspect-w-1 aspect-h-1 w-[160px] bg-surface2/30">
-                                                {!loadedImages[model.modelid] && (
+                                                {!loadedImages[image.id.toString()] && (
                                                     <div className="absolute inset-0 flex items-center justify-center bg-surface2/50 backdrop-blur-sm">
                                                         <div className="relative w-12 h-12">
                                                             <div className="absolute inset-0 animate-ping opacity-75">
@@ -180,17 +169,17 @@ const AzurLane = () => {
                                                     </div>
                                                 )}
                                                 <img
-                                                    src={model.img}
-                                                    alt={model.name}
+                                                    src={image.src}
+                                                    alt={image.alt}
                                                     className={`
                                                     w-full h-full object-cover
                                                     transition-all duration-700 ease-out
-                                                    ${loadedImages[model.modelid]
+                                                    ${loadedImages[image.id.toString()]
                                                             ? 'opacity-100 scale-100 blur-0'
                                                             : 'opacity-0 scale-95 blur-sm'}
                                                 `}
                                                     loading="lazy"
-                                                    onLoad={() => handleImageLoad(model.modelid)}
+                                                    onLoad={() => handleImageLoad(image.id.toString())}
                                                 />
                                             </div>
                                         </div>
@@ -199,12 +188,12 @@ const AzurLane = () => {
                                         <span className={`
                                         text-sm font-medium leading-relaxed
                                         transition-colors duration-300
-                                        ${selectedModel === model.modelid ?
+                                        ${selectedModel === image.id.toString() ?
                                                 'text-primary' :
                                                 'text-text0 hover:text-primary/80'
                                             }
                                     `}>
-                                            {model.name}
+                                            {image.alt}
                                         </span>
                                     </div>
                                 </div>
@@ -217,4 +206,4 @@ const AzurLane = () => {
     )
 }
 
-export default AzurLane
+export default Live2DViewerEX
