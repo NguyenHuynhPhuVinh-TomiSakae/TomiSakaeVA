@@ -1,12 +1,18 @@
+/* eslint-disable prettier/prettier */
 import { Application, Ticker, DisplayObject } from 'pixi.js'
 import { useEffect, useRef, useState } from 'react'
-import { Live2DModel } from 'pixi-live2d-display-lipsyncpatch'
+import { Live2DModel, MotionPriority } from 'pixi-live2d-display-lipsyncpatch'
 import homeStore from '@/features/stores/home'
 import settingsStore from '@/features/stores/settings'
 import { Live2DHandler } from '@/features/messages/live2dHandler'
 import { debounce } from 'lodash'
 
 console.log('Live2DComponent module loaded')
+
+interface HitArea {
+  Name: string
+  Motion: string
+}
 
 const setModelPosition = (
   app: Application,
@@ -32,6 +38,7 @@ const Live2DComponent = () => {
   const selectedLive2DPath = settingsStore((state) => state.selectedLive2DPath)
   const isMouseTracking = settingsStore((state) => state.isMouseTracking)
   const live2dType = settingsStore((state) => state.live2dType)
+  const [hitAreas, setHitAreas] = useState<HitArea[]>([])
 
   useEffect(() => {
     initApp()
@@ -88,9 +95,13 @@ const Live2DComponent = () => {
     try {
       const newModel = await Live2DModel.fromSync(modelPath, {
         ticker: Ticker.shared,
-        autoHitTest: false,
+        autoHitTest: true,
         autoFocus: false,
       })
+
+      const response = await fetch(modelPath)
+      const data = await response.json()
+      setHitAreas(data.HitAreas || [])
 
       await new Promise((resolve, reject) => {
         newModel.once('load', () => resolve(true))
@@ -104,6 +115,14 @@ const Live2DComponent = () => {
 
       modelRef.current = newModel
       setModel(newModel)
+
+      newModel.on('hit', (hitArea: string) => {
+        hitAreas.forEach((area) => {
+          if (hitArea.includes(area.Name)) {
+            newModel.motion(area.Motion)
+          }
+        })
+      })
 
       // Lưu viewer vào homeStore
       homeStore.setState({
@@ -125,13 +144,47 @@ const Live2DComponent = () => {
 
     const canvas = canvasContainerRef.current
 
-    const handlePointerDown = (event: PointerEvent) => {
+    const handlePointerDown = async (event: PointerEvent) => {
       if (event.button === 0) {
         setIsDragging(true)
         setDragOffset({
           x: event.clientX - model.x,
           y: event.clientY - model.y,
         })
+      } else if (event.button === 2) {
+        if (!app) return
+
+        const hitAreaNames = Object.keys(
+          (model.internalModel as any).hitAreas || {}
+        )
+        const renderer = app.renderer
+        const rect = canvas.getBoundingClientRect()
+
+        // Tính toán tọa độ chuột trong không gian renderer
+        const x = ((event.clientX - rect.left) / rect.width) * renderer.width
+        const y = ((event.clientY - rect.top) / rect.height) * renderer.height
+
+        // Chuyển đổi sang tọa độ local của model
+        const point = model.toLocal({ x, y })
+
+        for (const hitAreaName of hitAreaNames) {
+          const isHit = (model.internalModel as any).isHit(
+            hitAreaName,
+            point.x,
+            point.y
+          )
+          if (isHit) {
+            // Tìm motion tương ứng trong hitAreas
+            const matchingArea = hitAreas.find(area => area.Name === hitAreaName)
+            if (matchingArea) {
+              // Sử dụng MotionPriority.FORCE thay vì Priority.FORCE
+              model.motion(matchingArea.Motion, undefined, MotionPriority.FORCE)
+            } else {
+              console.log('No matching motion found for hit area:', hitAreaName)
+            }
+            break
+          }
+        }
       }
     }
 
